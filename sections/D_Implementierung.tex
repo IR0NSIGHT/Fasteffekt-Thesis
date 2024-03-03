@@ -6,67 +6,62 @@
 
 Für die Implementation der Benchmarks in Effekt wird Visual Studio Code als IDE verwendet.
 Effekt stellt dafür eine VSC Erweiterung zur Verfügung (https://github.com/effekt-lang/effekt-vscode), welches als Linter und Typechecker fungiert. 
-Um das fasteffekt Tool selbst zu entwickeln und zu debuggen, wurde Intellij Ultimate verwendet. Ultimate kommt von Haus aus mit Javascript Unterstützung.
-Zur Verifikation von Änderungen während des Entwicklungsprozesses, wird Github Actions genutzt um fasteffekt im verify modus auszuführen. Dadurch kann sichergestellt werden, dass Änderungen an den Benchmarks nicht zum Fehlschlagen der Benchmarks während der Ausführung führt. Die Actions Pipeline wird nicht genutzt um Benchmark Timing durchzuführen, da keine Garantien gegeben werden können welche Maschine mit welcher Hardware die Benchmarks ausführt. Benchmark Timings wären nicht vergleichsfähig und dadurch nicht aussagekräftig.
 
 \subsubsection{Intellij Ultimate für Javascript Debugging des runners}
+Um das fasteffekt Tool selbst zu entwickeln und zu debuggen, wurde Intellij Ultimate verwendet. Ultimate kommt von Haus aus mit Javascript Unterstützung.
 
 \subsubsection{github actions für CI/CD Pipeline}
-
+Zur Verifikation von Änderungen während des Entwicklungsprozesses, wird Github Actions genutzt um fasteffekt im verify modus auszuführen. Dadurch kann sichergestellt werden, dass Änderungen an den Benchmarks nicht zum Fehlschlagen der Benchmarks während der Ausführung führt. Die Actions Pipeline wird nicht genutzt um Benchmark Timing durchzuführen, da keine Garantien gegeben werden können welche Maschine mit welcher Hardware die Benchmarks ausführt. Benchmark Timings wären nicht vergleichsfähig und dadurch nicht aussagekräftig.
     
-\subsection{Umsetzung der Funktionalitäten gemäß den Anforderungen} 
+\subsection{ Umsetzung des Benchmarking Tools } 
 \subsubsection{ Microbenchmarks }
+Implementiert in Effekt sind alle 9 Microbenchmarks aus Are-we-fast-yet:
+
+Bounce simulates a ball bouncing within a box.
+
+List recursively creates and traverses lists.
+
+Mandelbrot calculates the classic fractal. It is derived from the Computer Languages Benchmark Game.
+
+NBody simulates the movement of planets in the solar system. It is derived from the Computer Languages Benchmark Game.
+
+Permute generates permutations of an array.
+
+Queens solves the eight queens problem.
+
+Sieve finds prime numbers based on the sieve of Eratosthenes.
+
+Storage creates and verifies a tree of arrays to stress the garbage collector.
+
+Towers solves the Towers of Hanoi game.
+
+Die Implementation richtet sich dabei nach der Javascript Implementation aus Are-We-Fast-Yet.
+Es gibt kleinere Abweichungen von der AWFY Implementation, hauptsächlich wie der Benchmark aufgerufen und ausgeführt wird. 
+Jeder Benchmark ist eine eigenständige, ausführbare Effekt Datei. Er importiert CLIRunner und führt entweder den normal-mode oder mini-mode des Benchmarks aus. Minimode wird für Verifikation genutzt, Normal zur Zeitmessung.
+Dies stellt eine Abweichung zur AWFY Implementation dar und ist durch das unfertige Import System von Effekt bedingt.
+Durch diese etwas ungewöhnliche Inversion of Imports können ungewollte Nameclashes von Verschiedenen Benchmarks im CLI Runner verhindert werden, jeder Benchmark hat keine Imports nach aussen ausser den CLI Runner und manchmal SOM.effekt.
+Der Benchmark misst die Zeit die jeder Durchlauf benötigt und gibt das Ergebnis als JSON-Array<Int> formatiert zurück in die Standardausgabe. Jede Zahl stellt dabei die Millisekunden dar, die ein Durchlauf dieses Benchmarks gebraucht hat.
+Standardmäßig führt jeder Run den selben Benchmark mehrfach aus.
+Gemessen wird dabei nur die Zeit die der Durchlauf zur Ausführung benötigt. Eventuelle Startupzeiten oder Laden von Abhängigkeiten werden nicht berücksichtigt.
+Ausgeführt werden kann jeder Benchmark durch zwei Schritte: Executable compilen, Executable aufrufen mit Parametern.
+Der Effekt Compiler kann zwar in einem Schritt direkt eine Datei compilen und ausführen, aber es ist dabei nicht möglich Kommandozeilen Argumente zu übergeben.
+Stattdessen muss die build Flag genutzt werden:
+effekt.sh -b meinBenchmark.effekt && ./out/meinBenchmark --verify 1
+
+Hier sei am Rande erwähnt dass zwar die meisten aber nicht alle Backends so funktionieren. Für die Chez-Derivate Backends ist die Übergabe von Kommandozeilen argumenten durch einen Bug noch nicht möglich.
+
 \subsubsection{ Runner }
 \subsubsection{ CLI Tool }
-\subsubsection{CI/CD Pipeline }
-\subsubsection{ Backend = JS, später restliche backends }
-\subsubsection{ Vergleich der Performance von verschiedenen Effekt Versionen }
+  
+Um bequem alle Benchmarks hintereinander auszuführen und die Ergebnisse zu loggen existiert das Fasteffekt CLI Tool.
+Es ist in Javascript geschrieben und ein NPM Projekt. Dadurch kann der Nutzer das Tool einfach herunterladen und in seinen PATH einbinden.
+Ruft der Nutzer das Tool auf, lässt Comparator.js alle in der Konfiguration hinterlegten Benchmarks synchron kompilieren und dann ausführen, in jeweils eigenen Shell Threads. Compile und Runtime Fehler werden aufgefangen und in eine Fehler-logdatei geschrieben. Die Ergebnisse eines jeden Benchmarks aus dem standard output werden aufgefangen und zwischengespeichert.
+Zusätzlich zu jedem Ausführen eines Benchmarks in Effekt, wird die Javascript Version des Benchmarks aus AWFY ausgeführt, gemessen und geloggt, analog zur Effekt Variante.
+Alle Durchlauf Zeiten werden nach Benchmark name gelogged in eine Datei, formatiert als JSON.
+Benchmarks, die fehlgeschlagen sind während compile oder runtime, tauchen nicht auf in der Output Datei.
 
-    Implementiert in Effekt sind alle 9 Microbenchmarks aus Are-we-fast-yet:
+Zur Übersichtlichkeit für den Nutzer werden nach Abschluss des Benchmarks die Durchschnittlichen Zeiten jedes Benchmarks in Effekt und Javascript angezeigt, sowie ein Vergleich Effekt/Javascript:
 
-        Bounce simulates a ball bouncing within a box.
-
-        List recursively creates and traverses lists.
-
-        Mandelbrot calculates the classic fractal. It is derived from the Computer Languages Benchmark Game.
-
-        NBody simulates the movement of planets in the solar system. It is derived from the Computer Languages Benchmark Game.
-
-        Permute generates permutations of an array.
-
-        Queens solves the eight queens problem.
-
-        Sieve finds prime numbers based on the sieve of Eratosthenes.
-
-        Storage creates and verifies a tree of arrays to stress the garbage collector.
-
-        Towers solves the Towers of Hanoi game.
-        
-        Die Implementation richtet sich dabei nach der Javascript Implementation aus Are-We-Fast-Yet.
-        Es gibt kleinere Abweichungen von der AWFY Implementation, hauptsächlich wie der Benchmark aufgerufen und ausgeführt wird. 
-     Jeder Benchmark ist eine eigenständige, ausführbare Effekt Datei. Er importiert CLIRunner und führt entweder den normal-mode oder mini-mode des Benchmarks aus. Minimode wird für Verifikation genutzt, Normal zur Zeitmessung.
-     Dies stellt eine Abweichung zur AWFY Implementation dar und ist durch das unfertige Import System von Effekt bedingt.
-     Durch diese etwas ungewöhnliche Inversion of Imports können ungewollte Nameclashes von Verschiedenen Benchmarks im CLI Runner verhindert werden, jeder Benchmark hat keine Imports nach aussen ausser den CLI Runner und manchmal SOM.effekt.
-     Der Benchmark misst die Zeit die jeder Durchlauf benötigt und gibt das Ergebnis als JSON-Array<Int> formatiert zurück in die Standardausgabe. Jede Zahl stellt dabei die Millisekunden dar, die ein Durchlauf dieses Benchmarks gebraucht hat.
-     Standardmäßig führt jeder Run den selben Benchmark mehrfach aus.
-     Gemessen wird dabei nur die Zeit die der Durchlauf zur Ausführung benötigt. Eventuelle Startupzeiten oder Laden von Abhängigkeiten werden nicht berücksichtigt.
-     Ausgeführt werden kann jeder Benchmark durch zwei Schritte: Executable compilen, Executable aufrufen mit Parametern.
-     Der Effekt Compiler kann zwar in einem Schritt direkt eine Datei compilen und ausführen, aber es ist dabei nicht möglich Kommandozeilen Argumente zu übergeben.
-     Stattdessen muss die build Flag genutzt werden:
-    effekt.sh -b meinBenchmark.effekt && ./out/meinBenchmark --verify 1
-    
-    Hier sei am Rande erwähnt dass zwar die meisten aber nicht alle Backends so funktionieren. Für die Chez-Derivate Backends ist die Übergabe von Kommandozeilen argumenten durch einen Bug noch nicht möglich.
-    
-    
-    Um bequem alle Benchmarks hintereinander auszuführen und die Ergebnisse zu loggen existiert das Fasteffekt CLI Tool.
-    Es ist in Javascript geschrieben und ein NPM Projekt. Dadurch kann der Nutzer das Tool einfach herunterladen und in seinen PATH einbinden.
-    Ruft der Nutzer das Tool auf, lässt Comparator.js alle in der Konfiguration hinterlegten Benchmarks synchron kompilieren und dann ausführen, in jeweils eigenen Shell Threads. Compile und Runtime Fehler werden aufgefangen und in eine Fehler-logdatei geschrieben. Die Ergebnisse eines jeden Benchmarks aus dem standard output werden aufgefangen und zwischengespeichert.
-    Zusätzlich zu jedem Ausführen eines Benchmarks in Effekt, wird die Javascript Version des Benchmarks aus AWFY ausgeführt, gemessen und geloggt, analog zur Effekt Variante.
-    Alle Durchlauf Zeiten werden nach Benchmark name gelogged in eine Datei, formatiert als JSON.
-    Benchmarks, die fehlgeschlagen sind während compile oder runtime, tauchen nicht auf in der Output Datei.
-    
-    Zur Übersichtlichkeit für den Nutzer werden nach Abschluss des Benchmarks die Durchschnittlichen Zeiten jedes Benchmarks in Effekt und Javascript angezeigt, sowie ein Vergleich Effekt/Javascript:
-    
 Mini analysis: [
 { name: 'permute', effekt: 1024, js: 5, ratio: 204.8 },
 { name: 'nbody', effekt: 24441, js: 217, ratio: 112.63133640552995 },
@@ -89,6 +84,11 @@ MLTon hat einen Bug mit Rekursion, und LLVM besitzt keine Implementation von mut
 
 Ausgeführt wird immer nur ein Effekt Backend. Um verschiedene Backends bezüglich der Performance vergleich zu wollen, muss fasteffekt mehrfach ausgeführt werden.  
 
+\subsubsection{CI/CD Pipeline }
+\subsubsection{ Backend = JS, später restliche backends }
+\subsubsection{ Vergleich der Performance von verschiedenen Effekt Versionen }
+ 
+
 \subsection{Herausforderungen und Lösungsansätze während der Implementierung}
 
 \subsubsection{Import clashes}
@@ -101,7 +101,23 @@ Ausgeführt wird immer nur ein Effekt Backend. Um verschiedene Backends bezügli
 fehlende QOL für klassische nicht-FP programmierung
 
 \subsubsection{ Zu schnelle Benchmarks }
-manche Benchmarks sind zu schnell, wie die performance künstlich aufblasen, ohne das Ergebniss zu verfälschen
+Als Kompromiss zwischen Aussagekraft und kurzer Laufzeit des Tools wurde arbiträr eine Laufzeit von zwei Sekunden pro Benchmark in Effekt gewählt.
+Mit zehn Microbenchmarks dauert ein kompletter Durchlauf von FastEffekt damit mindestens zwanzig Sekunden plus die Laufzeit der Javascript-AWFY-Vergleichsbenchmarks.
+Gesteuert werden kann die Dauer eines Benchmark-Durchlaufs über die Problemgröße und über innere Iterationen. Ist ein Benchmark deutlich zu langsam, kann die Problemgröße reduziert werden, ist ein Benchmark deutlich zu schnell, kann die Anzahl innerer Iterationen künstlich erhöht werden. Damit bietet sich eine begrenzte Kontrolle über die Laufzeit an.
+
+Wie bereits erwähnt, bilden die Javascript AWFY-Implementationen die Basis mit der die Performance der Effekt Benchmarks verglichen wird.
+Da vorallem das Effekt-Javascript-Backend teils deutlich langsamer ist als die AWFY-Javascript Version, muss die Problemgröße der Benchmarks klein gehalten werden. Ansonsten überschreiten die Effekt Benchmarks die Zwei-Sekunden-Grenze, und benötigen bis zu 30 Sekunden. Wenn allerdings die Problemgröße gedrückt wird, fällt auch die Dauer der Javascript Benchmarks, bis unter 2 Millisekunden. Die Zeitauflösung der Benchmarks ist nicht feingranular genug, um unter 1 Millisekunde zu messen. Das führt zu geloggten Zeiten von 0,1 und 2 Millisekunden, für die meisten Benchmarks. 
+
+Mit solchen grob granularen Zahlen lässt sich in der Analyse wenig anfangen. Mit einer Laufzeit von 0 Millisekunden wird sogar der Vergleich zur Effekt Laufzeit verfälscht und eine Ratio von positiv unendlich angegeben, oder Not a Number (NaN).
+
+Eine Lösung wäre eine feinere Zeiterfassung in Javascript, Millis und Mikrosekunden. Allerdings ist hier zu beachten, dass möglicherweise trotz feinerer Messung wieder Schwankungen im Interpreter, Garbage Collection und Laden von Dependencies das Ergebnis stark beeinflussen können.
+
+Eine alternative Lösung ist die Erhöhung der Problemgröße oder der inneren Iterationen, nur für Javascript, nicht aber für die Effekt Benchmarks.
+Das hat den Vorteil dass die Javascript Laufzeit aussagekräftiger wird, aber die Vergleichbarkeit mit der Effekt Laufzeit sinkt.
+
+Die dritte Lösung ist das Erhöhen von Problemgröße und inneren Iterationen in Effekt und Javascript, so bleibt Aussagekraft und Vergleichbarkeit erhalten.
+Damit wird das Fasteffekt Tool schmerzhaft langsam für den Endnutzer, wenn Laufzeiten von einer Minute und mehr erreicht werden, und verletzt damit das Kernrequirement eine schnelle Möglichkeit von Performance Messung zu bieten.
+
 \subsubsection{ import clashes}
 import clashes erzwingen inversion-of-imports (use cli-runner, single executables)
 
