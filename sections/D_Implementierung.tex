@@ -85,20 +85,65 @@ MLTon hat einen Bug mit Rekursion, und LLVM besitzt keine Implementation von mut
 Ausgeführt wird immer nur ein Effekt Backend. Um verschiedene Backends bezüglich der Performance vergleich zu wollen, muss fasteffekt mehrfach ausgeführt werden.  
 
 \subsubsection{CI/CD Pipeline }
-\subsubsection{ Backend = JS, später restliche backends }
+
+Zur Verifikation während des Entwicklungsprozesses wird Github Actions genutzt. In der Pipeline wird auf einer Ubuntu VM 
+NPM und NodeJS installiert, sowie eine spezifische Version von Effekt. Dann wird FastEffekt im verify Modus ausgeführt. 
+Damit werden alle Benchmarks mit Javascript als Backend ausgeführt mit einer minimalen Problemgröße, um zu verifizieren, dass die Implementationen noch lauffähig sind.
+Die Pipeline schlägt fehl, wenn FastEffekt einen Errorcode zurück gibt.
+
 \subsubsection{ Vergleich der Performance von verschiedenen Effekt Versionen }
  
 
 \subsection{Herausforderungen und Lösungsansätze während der Implementierung}
 
 \subsubsection{Import clashes}
+Relativ früh im Entwicklungsprozess trat das Problem der Import Clashes auf. Wenn zwei Module in Effekt importiert werden,
+die beide eine Funktion enthalten, welche den selben Namen hat, kommt es zum Clash. Es gibt für den Nutzer keine Möglichkeit 
+auszuwählen, welche der beiden Funktionen benutzt wird. Es gibt auch keine Möglichkeit, nur einen Teil der Module zu importieren.
+Importiert man ein Modul, wird immer alles importiert, analog zum sogenannten "Wildcard Import", einem aus Java bekannten Code Smell.
+
+Da nicht auswählbar ist, welche der beiden Funktionen verwendet wird, schränkt es die Nutzung von imports massiv ein. Ein workaround ist, in einer
+separaten Datei oder Modul einen der beiden Imports zu machen, dort alle Funktionen mit Wrappern neu zu definieren, und dann dieses neue Modul zu importieren.
+Effektiv werden dabei alle genutzten Funktionalitäten mit Wrappern versehen um sie umzubennenen. Der Kosten Nutzen Aufwand ist dabei so hoch, dass es in FastEffekt nicht genutzt wird.
+
+Als Alternative wird hier eine Inversion of Dependencies erzeugt: Es gibt nicht eine zentrale Klasse zu haben, welche alle Benchmarks importiert und ausführen kann.
+Stattdessen ist jeder Benchmark selbst ein ausführbares Modul mit eigenem Entry Point. Die nötige Funktionalität um Kommandozeilen Argumente zu parsen und Zeit zu messen wird vom
+CLI Runner Modul zur Verfügung gestellt, so hat jeder Benchmark nur die Abhängigkeit zum CLI Runner, statt der CLI Runner eine Abhängigkeit zu allen Benchmarks.
+
+Der offensichtliche Vorteil ist, dass die Anzahl von gesamten Imports in ein Modul hinein minimal wird. Zusätzlich kann garantiert werden, dass ein Benchmark nicht von einem anderen Benchmarkmodul beeinflusst wird, 
+wie beispielsweise durch erhöhte Ladezeiten oder RAM Bedarf. 
+Allerdings entsteht daraus der Nachteil, dass das Programm keinen zentralen Entry Point mehr hat, und auf neun verschiedene Datein verteilt ist. Dementsprechend wird ein 
+Wrapper Programm benötigt, sodass der Nutzer nur FastEffekt aufruft, und intern die einzelnen relevanten Benchmarks ausgeführt werden.
+
+Aufgrund des experimentellen und oft ändernden Zustands, sowie teils fehlende Funktionalität von Effekt ist das Wrapper Programm nicht in Effekt implementiert, sondern in Javascript.
 
 \subsubsection{unfertige backends}
 
 \subsubsection{buggy backends}
 
+
+
 \subsubsection{ Quality of Life }
-fehlende QOL für klassische nicht-FP programmierung
+Effekt ist eine funktionale Sprache. Are We Fast Yet wurde ursprünglich in Java implementiert, die als Vorlage ausgewählten Javascript Benchmarks nutzen auch stark objektorienterte Methoden.
+So ist jeder Benchmark eine Klasse, welche vom Benchmark Interface erbt, ganz analog zur Java Implementation.
+Diese Vorgehensweise ist in Effekt nicht möglich, Klassen und Objekte sind nicht implementiert, werden nicht unterstützt.
+
+Interfaces sind möglich in Effekt, aber deutlich restriktiver: Es dürfen nur exakt die Member implementiert sein, welche vom Interface vorgegeben werden, nicht mehr und nicht weniger.
+In Java und Javascript gibt es nur die Vorgabe, dass es mindestens die Member sein müssen, mehr sind aber erlaubt.
+
+[...] //TODO
+
+
+Auch Funktionsobjekte, welche in der allgemeinen Javascript Entwicklung viel genutzt werden, sind nicht möglich: Funktionen können nicht in Variablen "gespeichert" werden, können auch nicht von Funktionen returned werden.
+Der einzige erlaubte Weg eine Funktion weiter zu geben, ist als Parameter einer Higher Order Funktion, tiefer in den Call Stack hinein.
+
+
+
+
+\subsubsection{ Overload des Aktionspunktes }
+Zwar sind aufrufe wie "meinInterface.machEtwas()" möglich, allerdings ist dies keine echtes Objekt Orientiertes paradigma, sondern nur Syntaktik Sugar.
+Auch ist dieser Overload des "Aktionspunktes" so instabil, dass er kaum genutzt wird in FastEffekt. Eigentlich kann jede Funktion so aufgerufen werden, dass sie als Methode des ersten Parameters erscheint, 
+doch der Compiler erkennt dies oft nicht an. Ein Großteil der Versuche dies zu benutzen führte zu Compiler Fehlermn, weshalb ich schnell davon Abstand genommen habe.
 
 \subsubsection{ Zu schnelle Benchmarks }
 Als Kompromiss zwischen Aussagekraft und kurzer Laufzeit des Tools wurde arbiträr eine Laufzeit von zwei Sekunden pro Benchmark in Effekt gewählt.
