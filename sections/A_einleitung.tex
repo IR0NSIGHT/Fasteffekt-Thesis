@@ -1,25 +1,36 @@
-I. Einleitung
-	A. Hintergrund und Motivation
-	B. Zielsetzung der Arbeit
-		Forschungsfragen
-		- Lassen sich klassische OOP Programme übersetzen nach Effekt, und wie
-		- Wie performant sind die verschiedenen Backends von Effekt
-		- Wie nutzbar ist Effekt / Wie kaputt ist Effekt
-	C. Herangehensweise zur Beantwortung der Fragen
-	A. Anforderungsanalyse für das zu implementierende Programm
-		TODO: hinfaken, high level, nicht technisch
-		- Benchmarks aus Are We Fast Yet
-		- sprachen interner Performance vergleich, nicht cross-language
-		- tool für development an Effekt
-		- kann in Github action laufen 
-		- möglichst direkt feedback zur performance änderung an entwickler
-		- unix basiert, nicht windows
-		- ziel backend ist JS
-
+% I. Einleitung
 \medskip
-This thesis is structured as follows:
+Diese Arbeit ist wie folgt strukturiert
 \begin{itemize}
-    \item In \cref{sec:mainideas} we introduce the main ideas of this thesis.
-    \item In \cref{sec:technical-meat} we present our main technical development.
-    \item In \cref{sec:discussion} we conclude and discuss future directions of research.
+    \item In \cref{sec:mainideas} Wir stellen die Kernideen und Zielsetzung der Arbeit vor.
+    \item In \cref{sec:technical-meat} Wir präsentieren die Ergebnisse und Analyse der Ergebnisse.
+    \item In \cref{sec:discussion} Wir beschreiben die Implementation des Programms und technische Probleme die dabei aufgetreten sind.
 \end{itemize}
+
+\subsection{ Problemstellung }
+Um die Sprache Effekt auf Performance hin zu untersuchen während der Entwicklung, sollen Benchmarks ausgeführt werden.
+Die Ausführung der Benchmarks liefert numerische Werte welche die Laufzeit der einzelnen Benchmarks beschreiben. So können die Entwickler:innnen von Effekt
+abschätzen ob eine Änderung an der Sprache selbst die Performance verbessert oder verschlechtert.
+Als Grundlage werden die Benchmarks von Are-We-Fast-Yet verwendet, diese Benchmarks sollen in Effekt übersetzt und implementiert werden.
+Der Fokus soll dabei auf dem Vergleich der Performance zwischen zwei Effekt Versionen liegen, und nicht um die Performance von Effekt mit anderen Sprachen zu vergleichen.
+
+\begin{itemize}
+%   TODO: hinfaken, high level, nicht technisch
+    \item Benchmarks aus Are We Fast Yet
+    \item sprachen interner Performance vergleich, nicht cross-language
+    \item tool für development an Effekt
+    \item möglichst direkt feedback zur performance änderung an entwickler
+    \item unix basiert, nicht windows
+    \item ziel backend ist JS
+\end{itemize}
+
+\subsection{ Zielsetzung der Arbeit}
+\subsubsection{ Forschungsfragen }
+\begin{itemize}
+    \item Lassen sich klassische OOP Programme übersetzen nach Effekt, und wie
+    \item Wie performant sind die verschiedenen Backends von Effekt
+    \item Wie nutzbar ist Effekt / Wie kaputt ist Effekt
+\end{itemize}
+
+
+  
