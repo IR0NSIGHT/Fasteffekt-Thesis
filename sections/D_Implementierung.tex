@@ -11,7 +11,8 @@ Effekt stellt dafür eine VSC Erweiterung zur Verfügung (https://github.com/eff
 Um das fasteffekt Tool selbst zu entwickeln und zu debuggen, wurde Intellij Ultimate verwendet. Ultimate kommt von Haus aus mit Javascript Unterstützung.
 
 \subsubsection{github actions für CI/CD Pipeline}
-Zur Verifikation von Änderungen während des Entwicklungsprozesses, wird Github Actions genutzt um fasteffekt im verify modus auszuführen. Dadurch kann sichergestellt werden, dass Änderungen an den Benchmarks nicht zum Fehlschlagen der Benchmarks während der Ausführung führt. Die Actions Pipeline wird nicht genutzt um Benchmark Timing durchzuführen, da keine Garantien gegeben werden können welche Maschine mit welcher Hardware die Benchmarks ausführt. Benchmark Timings wären nicht vergleichsfähig und dadurch nicht aussagekräftig.
+Zur Verifikation von Änderungen während des Entwicklungsprozesses, wird Github Actions genutzt um fasteffekt im verify modus auszuführen. //FIXME use aktiv
+ Dadurch kann sichergestellt werden, dass Änderungen an den Benchmarks nicht zum Fehlschlagen der Benchmarks während der Ausführung führt. Die Actions Pipeline wird nicht genutzt um Benchmark Timing durchzuführen, da keine Garantien gegeben werden können welche Maschine mit welcher Hardware die Benchmarks ausführt. Benchmark Timings wären nicht vergleichsfähig und dadurch nicht aussagekräftig.
     
 \subsection{ Umsetzung des Benchmarking Tools } 
 \subsubsection{ Microbenchmarks }
@@ -84,7 +85,7 @@ MLTon hat einen Bug mit Rekursion, und LLVM besitzt keine Implementation von mut
 
 Ausgeführt wird immer nur ein Effekt Backend. Um verschiedene Backends bezüglich der Performance vergleich zu wollen, muss fasteffekt mehrfach ausgeführt werden.  
 
-\subsubsection{CI/CD Pipeline }
+\subsubsection{ CI/CD Pipeline }
 
 Zur Verifikation während des Entwicklungsprozesses wird Github Actions genutzt. In der Pipeline wird auf einer Ubuntu VM 
 NPM und NodeJS installiert, sowie eine spezifische Version von Effekt. Dann wird FastEffekt im verify Modus ausgeführt. 
@@ -94,9 +95,9 @@ Die Pipeline schlägt fehl, wenn FastEffekt einen Errorcode zurück gibt.
 \subsubsection{ Vergleich der Performance von verschiedenen Effekt Versionen }
  
 
-\subsection{Herausforderungen und Lösungsansätze während der Implementierung}
+\subsection{ Herausforderungen und Lösungsansätze während der Implementierung }
 
-\subsubsection{Import clashes}
+\subsubsection{ Import clashes }
 Relativ früh im Entwicklungsprozess trat das Problem der Import Clashes auf. Wenn zwei Module in Effekt importiert werden,
 die beide eine Funktion enthalten, welche den selben Namen hat, kommt es zum Clash. Es gibt für den Nutzer keine Möglichkeit 
 auszuwählen, welche der beiden Funktionen benutzt wird. Es gibt auch keine Möglichkeit, nur einen Teil der Module zu importieren.
@@ -151,7 +152,8 @@ Mit zehn Microbenchmarks dauert ein kompletter Durchlauf von FastEffekt damit mi
 Gesteuert werden kann die Dauer eines Benchmark-Durchlaufs über die Problemgröße und über innere Iterationen. Ist ein Benchmark deutlich zu langsam, kann die Problemgröße reduziert werden, ist ein Benchmark deutlich zu schnell, kann die Anzahl innerer Iterationen künstlich erhöht werden. Damit bietet sich eine begrenzte Kontrolle über die Laufzeit an.
 
 Wie bereits erwähnt, bilden die Javascript AWFY-Implementationen die Basis mit der die Performance der Effekt Benchmarks verglichen wird.
-Da vorallem das Effekt-Javascript-Backend teils deutlich langsamer ist als die AWFY-Javascript Version, muss die Problemgröße der Benchmarks klein gehalten werden. Ansonsten überschreiten die Effekt Benchmarks die Zwei-Sekunden-Grenze, und benötigen bis zu 30 Sekunden. Wenn allerdings die Problemgröße gedrückt wird, fällt auch die Dauer der Javascript Benchmarks, bis unter 2 Millisekunden. Die Zeitauflösung der Benchmarks ist nicht feingranular genug, um unter 1 Millisekunde zu messen. Das führt zu geloggten Zeiten von 0,1 und 2 Millisekunden, für die meisten Benchmarks. 
+Da vorallem das Effekt-Javascript-Backend teils deutlich langsamer ist als die AWFY-Javascript Version, //TODO auf analyse section beziehen
+ muss die Problemgröße der Benchmarks klein gehalten werden. Ansonsten überschreiten die Effekt Benchmarks die Zwei-Sekunden-Grenze, und benötigen bis zu 30 Sekunden. Wenn allerdings die Problemgröße gedrückt wird, fällt auch die Dauer der Javascript Benchmarks, bis unter 2 Millisekunden. Die Zeitauflösung der Benchmarks ist nicht feingranular genug, um unter 1 Millisekunde zu messen. Das führt zu geloggten Zeiten von 0,1 und 2 Millisekunden, für die meisten Benchmarks. 
 
 Mit solchen grob granularen Zahlen lässt sich in der Analyse wenig anfangen. Mit einer Laufzeit von 0 Millisekunden wird sogar der Vergleich zur Effekt Laufzeit verfälscht und eine Ratio von positiv unendlich angegeben, oder Not a Number (NaN).
 
@@ -163,7 +165,7 @@ Das hat den Vorteil dass die Javascript Laufzeit aussagekräftiger wird, aber di
 Die dritte Lösung ist das Erhöhen von Problemgröße und inneren Iterationen in Effekt und Javascript, so bleibt Aussagekraft und Vergleichbarkeit erhalten.
 Damit wird das Fasteffekt Tool schmerzhaft langsam für den Endnutzer, wenn Laufzeiten von einer Minute und mehr erreicht werden, und verletzt damit das Kernrequirement eine schnelle Möglichkeit von Performance Messung zu bieten.
 
-\subsubsection{ import clashes}
+\subsubsection{ import clashes }
 import clashes erzwingen inversion-of-imports (use cli-runner, single executables)
 
 \subsection{Architektur des Programms}
