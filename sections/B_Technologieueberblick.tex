@@ -37,5 +37,22 @@ Bis auf Arrays sind alle Datenstrukturen der Standard Libraries immutable, auch 
 Auch für uns relevant ist, dass Effekt tail-recursion erlaubt: Rekursion wobei der rekursive Aufruf den letzten Ausdruck der Funktion bildet, der Compiler dies erkennt und deshalb beim Voranschreiten der Rekursion die aufrufende Funktion nicht auf dem Stack halten muss. Die Rekursion führt also zu keinem Anwachsen des Stacks. 
 Aufgrund der verfügbaren Tailrekursion hat Effekt einen starken Fokus auf Rekursion und kaum Features für Iteration. Es gibt durchaus Implementationen von Loops: each und while, diesen fehlen aber einige Quality-of-Life Features die man in anderen Sprachen findet, wie zum Beispiel break, early return oder continue.
 
+\subsubsection{ Effekt Backend }
+Effekt ist eine statisch typisierte Sprache und wird vor ausführung kompiliert.
+Dabei können wir auswählen welches Compiletarget bzw. Kompilerbackend wir verwenden wollen: Die Zielsprache in die wir unseren Effektcode kompilieren.
+Zur Auswahl stehen:
+\begin{itemize}
+    \item Javascript
+    \item Chez-Lift (Scheme)
+    \item Chez-Monadic (Scheme)
+    \item Chez-callcc (Scheme)
+    \item MLTON
+    \item LLVM
+\end{itemize}
+Dabei ist Javascript das Backend, welches am weitesten fertiggestellt und verwendbar ist. Jedes Backend hat eine eigene Effekt-Standardlibrary, die nicht immer alle Funktionen in allen Backends bereitstellt, auch die konkrete Funktionalität kann je nach Sprache variieren:
+So sind Arrays in Javascript dynamisch erweiterbar, versuchen wir an eine Indexposition ausserhalb des Arrays zu schreiben, wird dieser automatisch vergrößert um das neue ELement aufzunehmen.
+In Mlton führt das selbe zu einem Fehler und das Programm stürzt ab.
+Auch die Signaturen von Funktionen variieren leicht, vorallem Overloads von Funktionen sind oft nicht in allen Backends in jeder Ausführung vertreten.
+
 \subsection{ Überblick über Are We Fast Yet Benchmarks }
 i am speed
