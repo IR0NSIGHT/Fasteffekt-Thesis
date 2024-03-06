@@ -1,4 +1,41 @@
 % II. Technologieüberblick
+Im folgenden wollen wir die verwendeten Technologien kurz besprechen.
+Dabei geben wir nur einen sehr groben Überblick über die allgemeinen Punkte von Effekt und Are We Fast Yet und konzentrieren uns mehr auf die fürs uns relevanten Punkte.
+
 \subsection{ Überblick über die Effekt Sprache  }	
+Effekt ist eine research-level Programmiersprache entwickelt an der Universität Tübingen.
+Die Syntax ist stark inspiriert von der Sprache \textit{Scala}.
+
+Effekt bietet eine starke Kontrolle über Seiteneffekte, die Existenzdauer von Variablen und Kontrollfluss.
+
+\subsubsection{ Effekte }
+
+Grundsätzlich bilden Effekte ein Kernfeature der Sprache:
+\begin{quote}
+    Effects Generalize Exceptions\\
+    Effect handlers are exception handlers on steroids! Like with exceptions, we first define the type of the exception. In Effekt, a declaration like Yield is called an effect signature.
+\end{quote}
+
+Diese ersetzen das Weitergeben von Objekten mit Methoden oder Funktionsobjekten und ermöglichen einen sehr sicheren Kontrollfluss des Programms, ohne unerwartete Seiteneffekte.
+Effekte sind stark typisiert und die Sprache kann garanierten, dass keine unhandled Exceptions im Programm geworfen werden.
+
+Funktionen können nicht in Variablen gespeichert werden, und nicht von Higher-Order-Funktions zurück gegeben werden. Wir können Funktionen nur von oben nach unten im Kontrollfluss weitergeben, als Parameter von aufgerufenen Funktionen, aber niemals in die andere Richtung. Funktionen und Variablen haben dabei auch eine begrenzte Lebenszeit, welche mit Abschluss des Aufrufs der Funktion endet.
+Damit sind, im Gegensatz zu den Funktionsobjekten in Javascript oder den Objekten aus Java, keine Seiteneffekte auf Funktionsebene möglich und alle Funktionsaufrufe idempotent.
+%//TODO verify this claim
+
+Alternativ zu Funktionsobjekten können wir \textit{Regions} verwenden. Oberflächlich kann man sich eine Region als eine Closure vorstellen, die wir mit Variablen und Daten befüllen können und die wir als Parameter an Funktionen übergeben können, damit diese Seiteneffekt basierte Funktionalität nutzen können. Die Lifetime der Region geht dabei über den Funktionsaufruf hinaus, die Grundlage für Seiteneffekte.\\
+Wir nutzen konkret in dieser Arbeit Regions für seedbasierte Zufallszahlen, dabei bildet die Region das Gegenstück zum Zufallszahlengenerator-Funktionsobjekt aus Javascript.
+
+Weiter wollen wir nicht auf Effekte eingehen, da die von uns implementierten Benchmarks kaum davon Gebrauch machen.
+
+\subsubsection{ Iteration und objektorientiertes Paradigma }
+
+Dabei folgt Effekt oft dem Funktionalen Paradigma, objektorientierte Programmierung wird kaum unterstützt:
+Klassen und Vererbung existieren nicht, nur Interfaces und Records sind verfügbar.
+Bis auf Arrays sind alle Datenstrukturen der Standard Libraries immutable, auch Records sind immutable. Das bedeutet, dass auch alle nutzerdefinierten Datenstrukturen immutable sind.
+
+Auch für uns relevant ist, dass Effekt tail-recursion erlaubt: Rekursion wobei der rekursive Aufruf den letzten Ausdruck der Funktion bildet, der Compiler dies erkennt und deshalb beim Voranschreiten der Rekursion die aufrufende Funktion nicht auf dem Stack halten muss. Die Rekursion führt also zu keinem Anwachsen des Stacks. 
+Aufgrund der verfügbaren Tailrekursion hat Effekt einen starken Fokus auf Rekursion und kaum Features für Iteration. Es gibt durchaus Implementationen von Loops: each und while, diesen fehlen aber einige Quality-of-Life Features die man in anderen Sprachen findet, wie zum Beispiel break, early return oder continue.
+
 \subsection{ Überblick über Are We Fast Yet Benchmarks }
- 
+i am speed
