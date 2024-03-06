@@ -3,47 +3,42 @@
 Diese Arbeit ist wie folgt strukturiert
 \begin{itemize}
     \item In \cref{sec:mainideas} Wir stellen die Kernideen und Zielsetzung der Arbeit vor.
-    \item In \cref{sec:technical-meat} Wir präsentieren die Ergebnisse und Analyse der Ergebnisse.
-    \item In \cref{sec:discussion} Wir beschreiben die Implementation des Programms und technische Probleme die dabei aufgetreten sind.
+    \item In \cref{sec:technical-meat} Wir präsentieren und analysieren die Ergebnisse.
+    \item In \cref{sec:discussion} Wir beschreiben die Implementation des Programms, sowie technische Probleme die dabei aufgetreten sind.
 \end{itemize}
 
 \subsection{ Problemstellung }
 Die Sprache Effekt befindet sich noch in der Entwicklung. Die Entwickler:innen haben den Verdacht, dass die Sprache mit der Zeit an Performance eingebüßt hat.
 "Mit jeder Änderung wird Effekt ein wenig langsamer" - Philipp Schuster
 Dies zu verifizieren ist nicht ohne weiteres möglich, ein in Effekt geschriebener Benchmark wird benötigt um die Performance Änderung zu quantifizieren.
-Für die zukünftige Entwicklung an Effekt suchen wir eine Lösung, die es erlaubt schnell und direkt Feedback zur Performanz Änderung zu bekommen, wenn eine Änderung an Effekt vorgenommen wird.
+Für die zukünftige Entwicklung an Effekt suchen wir eine Lösung, die esden Entwickler:innen erlaubt, schnell und direkt quantitatives Feedback über Performanz Änderung zu bekommen, wenn eine Änderung an Effekt vorgenommen wird. So können potentielle Bottlenecks und Bugs im Compiler leichter identifiziert werden.
 Dabei wollen wir die Benchmarks aus dem Paper "Are We Fast Yet" verwenden.
 
-Die Zielplattform ist dabei Linux, eine Lösung für Windows und MacOS streben wir nicht an.
+Die Zielplattform ist dabei Linux (Ubuntu 22.04), eine Lösung für Windows und MacOS streben wir nicht an.
 Die Benchmarks sollen mindestens für das Effekt-Backend Javascript lauffähig sein.
-
-\begin{itemize}
-%   TODO: hinfaken, high level, nicht technisch
-    \item Benchmarks aus Are We Fast Yet
-    \item sprachen interner Performance vergleich, nicht cross-language
-    \item tool für development an Effekt
-    \item möglichst direkt feedback zur performance änderung an entwickler
-    \item unix basiert, nicht windows
-    \item ziel backend ist JS
-\end{itemize}
 
 \subsection{ Zielsetzung der Arbeit}
 
-Um das Problem der unbekannten Performance während der Entwicklung von Effekt zu lösen, soll ein Kommandozeilen Werkzeug entwickelt werden.
-Darüber können Entwickler:innen mit wenig Aufwand Benchmarks in Effekt ausführen.
-Die Benchmarks sind in Effekt implementiert und basieren auf den Are-We-Fast-Yet Microbenchmarks.
-Die Ausführung der Benchmarks liefert numerische Werte welche die Laufzeit der einzelnen Benchmarks beschreiben. So können die Entwickler:innnen
-abschätzen ob eine Änderung an der Sprache die Performance verbessert oder verschlechtert.
+Um das Problem der unbekannten Performance während der Entwicklung von Effekt zu lösen, soll ein Kommandozeilen Werkzeug entwickelt werden: \textit{FastEffekt}
 
-Dabei wird auch untersucht, inwiefern klassische OOP Programme nach Effekt übersetzt werden können und ob Effekt stabil genug für moderat komplexe Programme ist.  
-Als Zielbackends wählen wir Javascript, Chez-Lift, Chez-TODO und Chez-FIXME.
+Damit können Entwickler:innen mit wenig Aufwand mehrere Benchmarks in Effekt ausführen.
+Die Benchmarks sind in Effekt implementiert und basieren auf den 9 Are-We-Fast-Yet Microbenchmarks.
+Die Ausführung der Benchmarks liefert die Laufzeit der einzelnen Benchmarks als numerische Werte. Die Werte werden in eine JSON-Datei geschrieben, sodass mit wenig Aufwand weitere Analysen stattfinden können.
+Das Tool vergleicht ausserdem die Performance von Effekt mit den Javascript Benchmarks von AWFY. Diese dienen als Basis für quantitative Vergleiche der Performance von Effekt.
+So können die Entwickler:innnen abschätzen ob eine Änderung an der Sprache die Performance verbessert oder verschlechtert.
+
+Dabei untersuchen wir auch, inwiefern klassische OOP Programme nach Effekt übersetzt werden können und ob Effekt bereits stabil genug für moderat komplexe Programme ist.  
+Desweiteren analysieren wir, wieviel Performance Overhead im Javascript Backend mitbringt gegnüber der reinen Javascript Implementation, sowie die Performanz der verschiedenen Effekt Backends gegeneinander.
+
+Als Zielbackends wählen wir Javascript, Chez-Lift, Chez-Monadic und Chez-callcc.
 LLVM und MLTON werden nicht verwendet, da hier zu viele technische Einschränkungen vorliegen //TODO cite unfertige Backends
 
-\subsubsection{ Forschungsfragen }
+Im folgenden wollen wir konkret diese Forschungsfragen beantworten:
 \begin{itemize}
-    \item Lassen sich klassische OOP Programme übersetzen nach Effekt, und wie
-    \item Wie performant sind die verschiedenen Backends von Effekt
-    \item Wie nutzbar ist Effekt / Wie kaputt ist Effekt
+    \item Lassen sich klassische OOP Programme übersetzen nach Effekt, wenn ja, welche Einschränkungen liegen vor?
+    \item Wieviel Overhead bringt Effekt mit gegenüber der reinen Javascript Implementation?
+    \item Wie unterscheidet sich die Performance der verschiedenen Effekt Backends untereinander?
+    \item Ist Effekt weit genug fortgeschritten, um damit moderat komplexe Programme zu implementieren?
 \end{itemize}
 
 
