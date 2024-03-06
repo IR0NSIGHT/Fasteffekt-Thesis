@@ -1,5 +1,4 @@
 % I. Einleitung
-\medskip
 Diese Arbeit ist wie folgt strukturiert
 \begin{itemize}
     \item In \cref{sec:mainideas} Wir stellen die Kernideen und Zielsetzung der Arbeit vor.
@@ -9,7 +8,12 @@ Diese Arbeit ist wie folgt strukturiert
 
 \subsection{ Problemstellung }
 Die Sprache Effekt befindet sich noch in der Entwicklung. Die Entwickler:innen haben den Verdacht, dass die Sprache mit der Zeit an Performance eingebüßt hat.
-"Mit jeder Änderung wird Effekt ein wenig langsamer" - Philipp Schuster
+\begin{center}
+    \begin{quote}
+        Mit jeder Änderung wird Effekt gefühlt ein bisschen langsamer\\
+        - Philipp Schuster, Effekt-Entwickler
+    \end{quote}
+\end{center}
 Dies zu verifizieren ist nicht ohne weiteres möglich, ein in Effekt geschriebener Benchmark wird benötigt um die Performance Änderung zu quantifizieren.
 Für die zukünftige Entwicklung an Effekt suchen wir eine Lösung, die esden Entwickler:innen erlaubt, schnell und direkt quantitatives Feedback über Performanz Änderung zu bekommen, wenn eine Änderung an Effekt vorgenommen wird. So können potentielle Bottlenecks und Bugs im Compiler leichter identifiziert werden.
 Dabei wollen wir die Benchmarks aus dem Paper "Are We Fast Yet" verwenden.
@@ -27,12 +31,14 @@ Die Ausführung der Benchmarks liefert die Laufzeit der einzelnen Benchmarks als
 Das Tool vergleicht ausserdem die Performance von Effekt mit den Javascript Benchmarks von AWFY. Diese dienen als Basis für quantitative Vergleiche der Performance von Effekt.
 So können die Entwickler:innnen abschätzen ob eine Änderung an der Sprache die Performance verbessert oder verschlechtert.
 
+\medskip
 Dabei untersuchen wir auch, inwiefern klassische OOP Programme nach Effekt übersetzt werden können und ob Effekt bereits stabil genug für moderat komplexe Programme ist.  
 Desweiteren analysieren wir, wieviel Performance Overhead im Javascript Backend mitbringt gegnüber der reinen Javascript Implementation, sowie die Performanz der verschiedenen Effekt Backends gegeneinander.
 
+\medskip
 Als Zielbackends wählen wir Javascript, Chez-Lift, Chez-Monadic und Chez-callcc.
 LLVM und MLTON werden nicht verwendet, da hier zu viele technische Einschränkungen vorliegen //TODO cite unfertige Backends
-
+\medskip
 Im folgenden wollen wir konkret diese Forschungsfragen beantworten:
 \begin{itemize}
     \item Lassen sich klassische OOP Programme übersetzen nach Effekt, wenn ja, welche Einschränkungen liegen vor?
