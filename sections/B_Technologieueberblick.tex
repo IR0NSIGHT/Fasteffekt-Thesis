@@ -6,7 +6,7 @@ Dabei geben wir nur einen sehr groben Überblick über die allgemeinen Punkte vo
 Effekt ist eine research-level Programmiersprache entwickelt an der Universität Tübingen.
 Die Syntax ist stark inspiriert von der Sprache \textit{Scala}.
 
-Effekt bietet eine starke Kontrolle über Seiteneffekte, die Existenzdauer von Variablen und Kontrollfluss.
+Effekt unterscheidet sich von anderen populären Sprachen darin, dass es eine starke Kontrolle über Seiteneffekte, die Existenzdauer von Variablen und Kontrollfluss bietet.
 
 \subsubsection{ Effekte }
 
@@ -19,27 +19,30 @@ Grundsätzlich bilden Effekte ein Kernfeature der Sprache:
 Diese ersetzen das Weitergeben von Objekten mit Methoden oder Funktionsobjekten und ermöglichen einen sehr sicheren Kontrollfluss des Programms, ohne unerwartete Seiteneffekte.
 Effekte sind stark typisiert und die Sprache kann garanierten, dass keine unhandled Exceptions im Programm geworfen werden.
 
-Funktionen können nicht in Variablen gespeichert werden, und nicht von Higher-Order-Funktions zurück gegeben werden. Wir können Funktionen nur von oben nach unten im Kontrollfluss weitergeben, als Parameter von aufgerufenen Funktionen, aber niemals in die andere Richtung. Funktionen und Variablen haben dabei auch eine begrenzte Lebenszeit, welche mit Abschluss des Aufrufs der Funktion endet.
+Im Gegensatz zu vielen anderen Sprachen, können Funktionen nicht in Variablen gespeichert werden, und nicht von Higher-Order-Funktions zurück gegeben werden. Wir können Funktionen nur von oben nach unten im Kontrollfluss weitergeben, als Parameter von aufgerufenen Funktionen, aber niemals in die andere Richtung. Funktionen und Variablen haben dabei auch eine begrenzte Lebenszeit, welche mit Abschluss des Aufrufs der Funktion endet.
 Damit sind, im Gegensatz zu den Funktionsobjekten in Javascript oder den Objekten aus Java, keine Seiteneffekte auf Funktionsebene möglich und alle Funktionsaufrufe idempotent.
 %//TODO verify this claim
 
+Da Berechnungen oft zwingend ein gewisses Maß an Seiteneffekten erfordert, stellt Effekt hier eine eigene Lösung zur Verfügung.
 Alternativ zu Funktionsobjekten können wir \textit{Regions} verwenden. Oberflächlich kann man sich eine Region als eine Closure vorstellen, die wir mit Variablen und Daten befüllen können und die wir als Parameter an Funktionen übergeben können, damit diese Seiteneffekt basierte Funktionalität nutzen können. Die Lifetime der Region geht dabei über den Funktionsaufruf hinaus, die Grundlage für Seiteneffekte.\\
-Wir nutzen konkret in dieser Arbeit Regions für seedbasierte Zufallszahlen, dabei bildet die Region das Gegenstück zum Zufallszahlengenerator-Funktionsobjekt aus Javascript.
+Durch die Typisierung der Region stellt diese dem Nutzer bestimmte Funktionalität zur Verfügung, analog zu einem Interface. Die Region internen Variablen werden dabei vor dem Nutzer verborgen.
+
+Wir nutzen konkret in dieser Arbeit Regions unter anderem für seedbasierte Zufallszahlen, dabei bildet die Region das Gegenstück zum Zufallszahlengenerator-Funktionsobjekt aus Javascript.
 
 Weiter wollen wir nicht auf Effekte eingehen, da die von uns implementierten Benchmarks kaum davon Gebrauch machen.
 
 \subsubsection{ Iteration und objektorientiertes Paradigma }
 
-Dabei folgt Effekt oft dem Funktionalen Paradigma, objektorientierte Programmierung wird kaum unterstützt:
+Effekt folgt stark dem Funktionalen Paradigma, objektorientierte Programmierung wird kaum unterstützt:
 Klassen und Vererbung existieren nicht, nur Interfaces und Records sind verfügbar.
-Bis auf Arrays sind alle Datenstrukturen der Standard Libraries immutable, auch Records sind immutable. Das bedeutet, dass auch alle nutzerdefinierten Datenstrukturen immutable sind.
+Bis auf Arrays sind alle Datenstrukturen der Standard Libraries immutable, auch Records sind immutable. Das bedeutet, dass alle nutzerdefinierten Datenstrukturen ebenfalls immutable sind.
 
 Auch für uns relevant ist, dass Effekt tail-recursion erlaubt: Rekursion wobei der rekursive Aufruf den letzten Ausdruck der Funktion bildet, der Compiler dies erkennt und deshalb beim Voranschreiten der Rekursion die aufrufende Funktion nicht auf dem Stack halten muss. Die Rekursion führt also zu keinem Anwachsen des Stacks. 
 Aufgrund der verfügbaren Tailrekursion hat Effekt einen starken Fokus auf Rekursion und kaum Features für Iteration. Es gibt durchaus Implementationen von Loops: each und while, diesen fehlen aber einige Quality-of-Life Features die man in anderen Sprachen findet, wie zum Beispiel break, early return oder continue.
 
 \subsubsection{ Effekt Backend }
-Effekt ist eine statisch typisierte Sprache und wird vor ausführung kompiliert.
-Dabei können wir auswählen welches Compiletarget bzw. Kompilerbackend wir verwenden wollen: Die Zielsprache in die wir unseren Effektcode kompilieren.
+Effekt ist eine statisch typisierte Sprache und wird vor der Ausführung kompiliert.
+Dabei können wir auswählen, welches Compiletarget bzw. Effektbackend wir verwenden wollen: Die Zielsprache, in welche wir unseren Effektcode kompilieren.
 Zur Auswahl stehen:
 \begin{itemize}
     \item Javascript
@@ -49,10 +52,46 @@ Zur Auswahl stehen:
     \item MLTON
     \item LLVM
 \end{itemize}
-Dabei ist Javascript das Backend, welches am weitesten fertiggestellt und verwendbar ist. Jedes Backend hat eine eigene Effekt-Standardlibrary, die nicht immer alle Funktionen in allen Backends bereitstellt, auch die konkrete Funktionalität kann je nach Sprache variieren:
-So sind Arrays in Javascript dynamisch erweiterbar, versuchen wir an eine Indexposition ausserhalb des Arrays zu schreiben, wird dieser automatisch vergrößert um das neue ELement aufzunehmen.
+Dabei ist Javascript das Backend, welches am weitesten fertiggestellt und verwendbar ist. 
+Zu beachten ist, dass es Unterschiede zwischen den Backends gibt.
+Jedes Backend hat eine eigene Effekt-Standardlibrary, nicht immer ist eine Funktion in allen Backends implementiert, auch die konkrete Funktionalität kann je nach Sprache variieren:
+So sind Arrays in Javascript dynamisch erweiterbar. Versuchen wir an eine Indexposition ausserhalb des Arrays zu schreiben, wird dieser automatisch vergrößert um das neue Element aufzunehmen.
 In Mlton führt das selbe zu einem Fehler und das Programm stürzt ab.
+%//TODO add code example
 Auch die Signaturen von Funktionen variieren leicht, vorallem Overloads von Funktionen sind oft nicht in allen Backends in jeder Ausführung vertreten.
 
 \subsection{ Überblick über Are We Fast Yet Benchmarks }
-i am speed
+Als Grundlage für die Benchmarks verwenden wir Are-We-Fast-Yet, im Folgenden mit AWFY abgekürzt.
+Es handelt sich dabei um ein Paper von ???, worin allgemein sprachenunabhängige Benchmarks implementiert werden, um die Performance von verschiedenen Sprachen miteinander zu vergleichen.
+Das Ziel dieser Benchmarks ist hier nicht in einer bestimmten Sprachen eine möglichst elegante/performante Lösung für ein Problem zu finden, oder zu testen welche Sprache die performanteste Standardlibrary hat.
+
+Stattdessen wird postuliert, dass alle Programmiersprachen im Kern aus einigen wenigen Funktionalitäten bestehen: Rekursion, Iteration, Variablen setzen, Arithmetik etc. %//TODO make clearer after reading source
+Die Grundidee ist, in einem Benchmark diese Kernfunktionalitäten zu nutzen, den Benchmark möglichst originalgetreu in verschiedenen Sprachen zu implementieren und dann die Laufzeit zu vergleichen. Hat Sprache A eine bessere Performance als Sprache B, leitet AFWY daraus ab, dass der Compiler/Interpreter von Sprache A diese Kernfeatures effizienter umsetzt als der von Sprache B.
+Der Compiler ist also in der Lage, besser die High Level Konstrukte der Sprache in Maschinencode umzuwandeln.
+
+AFWY implementiert zwei Arten von Benchmarks:
+Macrobenchmarks und Microbenchmarks.
+Microbenchmarks sind dabei deutlich kleiner, in der Implementation im Durchschnitt 120 Zeilen. Microbenchmarks konzentrieren sich dabei immer auf ein einzelnes Problem und kommen mit wenig externer Funktionalität aus. Microbenchmarks kann man sich ähnlich einem Unit Test vorstellen.
+
+Macrobenchmarks sind sehr viel größer, mehrere tausend Zeilen Implementation pro Macrobenchmark. Sie verwenden umfangreiche Funktionalität, als Vergleich ist hier ein Integration oder End-to-End Test angebracht.
+
+Die Benchmarks implementieren verschiedene populäre Probleme, wie beispielsweise den Tower of Hanoi, eine Flugzeugkollisionssimulation oder JSON Parsing.
+Im Paper wird argumentiert, dass dabei die verschiedenen Benchmarks verschiedene relevante Bereiche der Berechnung abdecken.
+In einem Benchmark wird die Fähigkeit zu tiefer Rekursion getestet, in einem anderen die Fähigkeit zur häufigen Belegung und Freigebung von Variablen, usw.
+
+Die Performance aller Benchmarks soll dann Aufschluss über die Stärken und Schwächen einer Programmiersprache geben und einen Vergleich mit anderen Sprachen ermöglichen.
+
+
+
+Kernpunkte von AWFY:
+- Benchmarks implementieren Problem
+- Benchmarks werden in vielen Sprachen möglichst exakt nachgebaut
+- Compiler wandelt Sprache um in die Kernfunktionalitäten
+- Wenn Sprache schnell im Benchmark => Compiler ist gut im wegrationalisieren von Syntaktic Sugar
+- Sprachen im Verlgeich
+
+
+
+
+
+
