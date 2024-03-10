@@ -7,15 +7,15 @@ Diese Arbeit ist wie folgt strukturiert
 \end{itemize}
 
 \subsection{ Problemstellung }
-Die Sprache Effekt befindet sich noch in der Entwicklung. Die Entwickler:innen haben den Verdacht, dass die Sprache mit der Zeit an Performance eingebüßt hat.
+Die Sprache Effekt befindet sich im Entwicklungstadium. Die Entwickler:innen haben dabei den Verdacht, dass die Sprache mit der Zeit an Performance eingebüßt hat.
 \begin{center}
     \begin{quote}
         Mit jeder Änderung wird Effekt gefühlt ein bisschen langsamer\\
-        - Philipp Schuster, Effekt-Entwickler
+        Philipp Schuster, Effekt-Entwickler
     \end{quote}
 \end{center}
 Dies zu verifizieren ist nicht ohne weiteres möglich, ein in Effekt geschriebener Benchmark wird benötigt um die Performance Änderung zu quantifizieren.
-Für die zukünftige Entwicklung an Effekt suchen wir eine Lösung, die esden Entwickler:innen erlaubt, schnell und direkt quantitatives Feedback über Performanz Änderung zu bekommen, wenn eine Änderung an Effekt vorgenommen wird. So können potentielle Bottlenecks und Bugs im Compiler leichter identifiziert werden.
+Für die zukünftige Entwicklung an Effekt suchen wir eine Lösung, die es den Entwickler:innen erlaubt, schnell und direkt quantitatives Feedback über Performanzveränderungen zu bekommen, wenn eine Änderung an Effekt vorgenommen wird. So können potentielle Bottlenecks und Bugs im Compiler leichter identifiziert werden.
 Dabei wollen wir die Benchmarks aus dem Paper "Are We Fast Yet" verwenden.
 
 Die Zielplattform ist dabei Linux (Ubuntu 22.04), eine Lösung für Windows und MacOS streben wir nicht an.
@@ -29,11 +29,11 @@ Damit können Entwickler:innen mit wenig Aufwand mehrere Benchmarks in Effekt au
 Die Benchmarks sind in Effekt implementiert und basieren auf den 9 Are-We-Fast-Yet Microbenchmarks.
 Die Ausführung der Benchmarks liefert die Laufzeit der einzelnen Benchmarks als numerische Werte. Die Werte werden in eine JSON-Datei geschrieben, sodass mit wenig Aufwand weitere Analysen stattfinden können.
 Das Tool vergleicht ausserdem die Performance von Effekt mit den Javascript Benchmarks von AWFY. Diese dienen als Basis für quantitative Vergleiche der Performance von Effekt.
-So können die Entwickler:innnen abschätzen ob eine Änderung an der Sprache die Performance verbessert oder verschlechtert.
+So können die Entwickler:innnen abschätzen und verifizieren, ob eine Änderung an der Sprache die Performance verbessert oder verschlechtert.
 
 \medskip
 Dabei untersuchen wir auch, inwiefern klassische OOP Programme nach Effekt übersetzt werden können und ob Effekt bereits stabil genug für moderat komplexe Programme ist.  
-Desweiteren analysieren wir, wieviel Performance Overhead im Javascript Backend mitbringt gegnüber der reinen Javascript Implementation, sowie die Performanz der verschiedenen Effekt Backends gegeneinander.
+Desweiteren analysieren wir, wie sich die Performanz von Effekt im Javascript Backend verhält gegenüber der reinen Javascript Implementation, sowie die Performanz der verschiedenen Effekt Backends gegeneinander.
 
 \medskip
 Als Zielbackends wählen wir Javascript, Chez-Lift, Chez-Monadic und Chez-callcc.
@@ -43,7 +43,7 @@ Im folgenden wollen wir konkret diese Forschungsfragen beantworten:
 \begin{itemize}
     \item Lassen sich klassische OOP Programme übersetzen nach Effekt, wenn ja, welche Einschränkungen liegen vor?
     \item Wieviel Overhead bringt Effekt mit gegenüber der reinen Javascript Implementation?
-    \item Wie unterscheidet sich die Performance der verschiedenen Effekt Backends untereinander?
+    \item Wie unterscheidet sich die Performanz der verschiedenen Effekt Backends untereinander?
     \item Ist Effekt weit genug fortgeschritten, um damit moderat komplexe Programme zu implementieren?
 \end{itemize}
 
