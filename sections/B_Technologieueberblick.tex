@@ -2,7 +2,7 @@
 Im folgenden wollen wir die verwendeten Technologien kurz besprechen.
 Dabei geben wir nur einen sehr groben Überblick über die allgemeinen Punkte von Effekt und Are We Fast Yet und konzentrieren uns mehr auf die fürs uns relevanten Punkte.
 
-\subsection{ Überblick über die Effekt Sprache  }	
+\subsection{ Die Effekt Sprache  }	
 Effekt ist eine research-level Programmiersprache entwickelt an der Universität Tübingen.
 Die Syntax ist stark inspiriert von der Sprache \textit{Scala}.
 
@@ -60,38 +60,74 @@ In Mlton führt das selbe zu einem Fehler und das Programm stürzt ab.
 %//TODO add code example
 Auch die Signaturen von Funktionen variieren leicht, vorallem Overloads von Funktionen sind oft nicht in allen Backends in jeder Ausführung vertreten.
 
-\subsection{ Überblick über Are We Fast Yet Benchmarks }
-Als Grundlage für die Benchmarks verwenden wir Are-We-Fast-Yet, im Folgenden mit AWFY abgekürzt.
-Es handelt sich dabei um ein Paper von ???, worin allgemein sprachenunabhängige Benchmarks implementiert werden, um die Performance von verschiedenen Sprachen miteinander zu vergleichen.
+\subsection{ Die Are-We-Fast-Yet Benchmarks }
+Um die Performanz von Effekt zu quantifizieren, benötigen wir Benchmarks, die wir ausführen und auf Zeit messen können. Die Benchmarks müssen dabei eine gewisse Aussagekraft über die allgemeine Performanz einer Sprache haben, damit wir echte Rückschlüsse ziehen können.
+
+Für die Implementation dieser Benchmarks verwenden wir die Benchmarks aus dem Paper Are-We-Fast-Yet, im Folgenden mit AWFY abgekürzt.
+Es handelt sich dabei um ein Paper von Stefan Marr, worin allgemein sprachenunabhängige Benchmarks implementiert werden, mit dem Ziel die Performance von verschiedenen Sprachen miteinander zu vergleichen.
+\begin{center}
+    \begin{quote}
+        The goal of this project is to assess whether a language implementation is highly optimizing and thus is able to remove the overhead of programming abstractions and frameworks. We are interested in comparing language implementations with each other and optimize their compilers as well as the run-time representation of objects, closures, arrays, and strings.
+    \end{quote}
+\end{center}
+
 Das Ziel dieser Benchmarks ist hier nicht in einer bestimmten Sprachen eine möglichst elegante/performante Lösung für ein Problem zu finden, oder zu testen welche Sprache die performanteste Standardlibrary hat.
 
-Stattdessen wird postuliert, dass alle Programmiersprachen im Kern aus einigen wenigen Funktionalitäten bestehen: Rekursion, Iteration, Variablen setzen, Arithmetik etc. %//TODO make clearer after reading source
-Die Grundidee ist, in einem Benchmark diese Kernfunktionalitäten zu nutzen, den Benchmark möglichst originalgetreu in verschiedenen Sprachen zu implementieren und dann die Laufzeit zu vergleichen. Hat Sprache A eine bessere Performance als Sprache B, leitet AFWY daraus ab, dass der Compiler/Interpreter von Sprache A diese Kernfeatures effizienter umsetzt als der von Sprache B.
-Der Compiler ist also in der Lage, besser die High Level Konstrukte der Sprache in Maschinencode umzuwandeln.
-
-AFWY implementiert zwei Arten von Benchmarks:
-Macrobenchmarks und Microbenchmarks.
-Microbenchmarks sind dabei deutlich kleiner, in der Implementation im Durchschnitt 120 Zeilen. Microbenchmarks konzentrieren sich dabei immer auf ein einzelnes Problem und kommen mit wenig externer Funktionalität aus. Microbenchmarks kann man sich ähnlich einem Unit Test vorstellen.
-
-Macrobenchmarks sind sehr viel größer, mehrere tausend Zeilen Implementation pro Macrobenchmark. Sie verwenden umfangreiche Funktionalität, als Vergleich ist hier ein Integration oder End-to-End Test angebracht.
-
-Die Benchmarks implementieren verschiedene populäre Probleme, wie beispielsweise den Tower of Hanoi, eine Flugzeugkollisionssimulation oder JSON Parsing.
-Im Paper wird argumentiert, dass dabei die verschiedenen Benchmarks verschiedene relevante Bereiche der Berechnung abdecken.
-In einem Benchmark wird die Fähigkeit zu tiefer Rekursion getestet, in einem anderen die Fähigkeit zur häufigen Belegung und Freigebung von Variablen, usw.
-
-Die Performance aller Benchmarks soll dann Aufschluss über die Stärken und Schwächen einer Programmiersprache geben und einen Vergleich mit anderen Sprachen ermöglichen.
+Stattdessen wird postuliert, dass alle Programmiersprachen im Kern aus einigen wenigen Abstraktionen, sogenannten \textit{Core Abstractions} bestehen.  Das bedeutet, dass eine große Schnittmenge verwendeter Funktionalität in allen Sprachen besteht, welche man vergleichen kann. 
 
 
+Die Grundidee ist, in einem Benchmark diese Kernabstraktionen zu nutzen, den Benchmark möglichst originalgetreu in verschiedenen Sprachen zu implementieren und dann die Laufzeit zu vergleichen. Hat Sprache A eine bessere Benchmark-Performance als Sprache B, leitet AFWY daraus ab, dass der Compiler/Interpreter von Sprache A diese Kernfeatures effektiver umsetzt als der von Sprache B.
+Andere Faktoren wie Garbage Collection, Standard Libraries und Sprachspezifische Abstraktionen werden nicht untersucht.
 
-Kernpunkte von AWFY:
-- Benchmarks implementieren Problem
-- Benchmarks werden in vielen Sprachen möglichst exakt nachgebaut
-- Compiler wandelt Sprache um in die Kernfunktionalitäten
-- Wenn Sprache schnell im Benchmark => Compiler ist gut im wegrationalisieren von Syntaktic Sugar
-- Sprachen im Verlgeich
+AWFY stellt dazu folgende zwei Grundsatzregeln auf:
+\begin{quote}
+    1. The benchmark is `identical` for all languages.
+    This is achieved by relying only on a widely available and commonly used subset of language features and data types.
 
+    2. The benchmarks should use language `idiomatically`.
+    This means, they should be realized as much as possible with idiomatic code in each language, while relying only on the core set of abstractions.
+\end{quote}
 
+\subsubsection{Macrobenchmark}
+AFWY implementiert 5 Macrobenchmarks. 
+Macrobenchmarks sind sehr groß, bis zu mehreren tausend Zeilen Implementation pro Macrobenchmark. Sie verwenden umfangreiche Funktionalität, haben Submodule und Imports. Als anschaulicher Vergleich ist hier ein Integration- oder End-to-End Test angebracht.
 
+\begin{itemize}
+\item CD ist eine Flugzeug Kollisions Simulation. 
+\item DeltaBlue is a classic VM benchmark used to tune, e.g., Smalltalk, Java, and JavaScript VMs. It implements a constraint solver.
+\item Havlak implements a loop recognition algorithm. It has been used to compare C++, Java, Go, and Scala performance.
+\item Json is a JSON string parsing benchmark derived from the minimal-json Java library.
+\item Richards is a classic benchmark simulating an operating system kernel. The used code is based on Wolczko's Smalltalk version.
+\end{itemize}
 
+In unserer Arbeit ignorieren wir die Macrobenchmarks aus Zeitgründen. Diese sind sehr komplex und aufwändig in der Implementation, vorallem da Effekt im Moment nur über sehr begrenzte Debugging Fähigkeiten verfügt. Auch bestehen für uns erhebliche Zweifel ob einige der Macrobenchmarks überhaupt umsetzbar sind in Effekt. So implementiert der CD-Macrobenchmark Red-Black-Trees als eine Datenstruktur um schon gesehene Flugzeuge in diesem Durchgang zu markieren, analog zu einem Hashset.
+Diese Bäume sind in der Originalimplementation mutierbar, in Effekt ist das nicht möglich. Die Implementation müsste so stark verändert werden in Effekt, dass die Vergleichbarkeit kaum noch gegeben ist.
 
+Der Aufwand die Macrobenchmarks zu implementieren ist unserer Meinung nach zu groß für zu wenig Wissensgewinn über die Performance.
+Die Aussagekraft der Microbenchmarks steht in einem deutlich besseren Kosten-Nutzen Verhältnis, weshalb wir uns ausschließlich darauf konzentrieren.
 
+\subsubsection{Microbenchmarks}
+Microbenchmarks sind deutlich kleiner als Macrobenchmarks, in der Implementation im Durchschnitt 120 Zeilen. %TODO verify claim
+Microbenchmarks konzentrieren sich dabei immer auf ein einzelnes Problem und die Lösungen kommen meist komplett ohne externe Funktionalität aus. Wir können sie uns ähnlich einem Unit Test vorstellen.
+Folgende Microbenchmarks sind in AWFY implementiert, alle werden von uns in Effekt umgesetzt:
+\begin{itemize}
+    \item Bounce simulates a ball bouncing within a box.
+    \item List recursively creates and traverses lists.
+    \item Mandelbrot calculates the classic fractal. It is derived from the Computer Languages Benchmark Game.
+    \item NBody simulates the movement of planets in the solar system. It is derived from the Computer Languages Benchmark Game.
+    \item Permute generates permutations of an array.
+    \item Queens solves the eight queens problem.
+    \item Sieve finds prime numbers based on the sieve of Eratosthenes.
+    \item Storage creates and verifies a tree of arrays to stress the garbage collector.
+    \item Towers solves the Towers of Hanoi game.
+\end{itemize}
+
+\subsubsection{Aussagekraft der Benchmarks}
+In AWFY wird argumentiert, dass die verschiedenen Benchmarks verschiedene relevante Bereiche der Berechnung abdecken, sprich bestimmte Teile der oben beschriebenen Core Abstractions.
+In einem Benchmark wird die Fähigkeit zu tiefer Rekursion getestet, in einem anderen die Fähigkeit zur häufigen Belegung und Freigebung von Variablen, etc.
+
+Die Performance aller Benchmarks soll dann Aufschluss über die Stärken und Schwächen einer Umsetzung einer Programmiersprache geben und einen Vergleich mit anderen Sprachen ermöglichen.
+
+AFWY demonstriert anschaulich an Grafiken welche Benchmarks welche Gebiete der Core Abstractions abdecken und dass die Benchmarks sich im Ergebnis untereinander voneinander unterscheiden.
+
+AWFY implementiert die Benchmarks in mehreren Sprachen und vergleicht die Performance dieser Sprachen miteinander. Da wir die Vergleichbarkeit mit anderen Sprachen erhalten wollen, obwohl Cross-Language-Comparison nicht der Fokus der Arbeit ist, implementieren wir die Benchmarks so originalgetreu wie möglich. 
