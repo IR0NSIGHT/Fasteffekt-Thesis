@@ -7,6 +7,7 @@ Effekt ist eine research-level Programmiersprache entwickelt an der Universität
 Die Syntax ist stark inspiriert von der Sprache \textit{Scala}.
 
 Effekt unterscheidet sich von anderen populären Sprachen darin, dass es eine starke Kontrolle über Seiteneffekte, die Existenzdauer von Variablen und Kontrollfluss bietet.
+Im Folgenden wollen wir einige Konzepte und Einschränkungen von Effekt vorstellen, welche für diese Arbeit relevant sind. Die stellt nur eine Untermenge der von Effekt bereitgestellten Funktionalität dar, für einen umfassenderen Überblick verweisen wir auf die offizielle Dokumentation der Sprache.
 
 \subsubsection{ Effekte }
 
@@ -21,13 +22,43 @@ Effekte sind stark typisiert und die Sprache kann garanierten, dass keine unhand
 
 Im Gegensatz zu vielen anderen Sprachen, können Funktionen nicht in Variablen gespeichert werden, und nicht von Higher-Order-Funktions zurück gegeben werden. Wir können Funktionen nur von oben nach unten im Kontrollfluss weitergeben, als Parameter von aufgerufenen Funktionen, aber niemals in die andere Richtung. Funktionen und Variablen haben dabei auch eine begrenzte Lebenszeit, welche mit Abschluss des Aufrufs der Funktion endet.
 Damit sind, im Gegensatz zu den Funktionsobjekten in Javascript oder den Objekten aus Java, keine Seiteneffekte auf Funktionsebene möglich und alle Funktionsaufrufe idempotent.
-%//TODO verify this claim
+%//TODO verify this claim, "contextual purity"
 
 Da Berechnungen oft zwingend ein gewisses Maß an Seiteneffekten erfordert, stellt Effekt hier eine eigene Lösung zur Verfügung.
 Alternativ zu Funktionsobjekten können wir \textit{Regions} verwenden. Oberflächlich kann man sich eine Region als eine Closure vorstellen, die wir mit Variablen und Daten befüllen können und die wir als Parameter an Funktionen übergeben können, damit diese Seiteneffekt basierte Funktionalität nutzen können. Die Lifetime der Region geht dabei über den Funktionsaufruf hinaus, die Grundlage für Seiteneffekte.\\
 Durch die Typisierung der Region stellt diese dem Nutzer bestimmte Funktionalität zur Verfügung, analog zu einem Interface. Die Region internen Variablen werden dabei vor dem Nutzer verborgen.
 
 Wir nutzen konkret in dieser Arbeit Regions unter anderem für seedbasierte Zufallszahlen, dabei bildet die Region das Gegenstück zum Zufallszahlengenerator-Funktionsobjekt aus Javascript.
+
+\begin{lstlisting}[language=JavaScript]
+interface Random {
+  def next(): Int
+}
+
+//Wrapper bekommt Berechnungsfunktion
+//und führt diese aus, mit einer Implementation für Random
+def withRandom[R]{ program: { Random } => R}: R = {
+  var seed = 74755;
+  def rand = new Random {
+    def next() = {
+    seed = mod((seed * 1309) + 13849, 100);
+    seed;
+    }
+  }
+  program{rand}
+}
+
+//Berechnung nutzt das Random interface
+def sumRand(){ rand: Random }: Int = {
+    rand.next() + rand.next() + rand.next()
+}
+
+//entry point für effekt
+def main() = {
+    val result = withRandom[Int]{ sumRand };
+    println(result);
+}
+\end{lstlisting}
 
 Weiter wollen wir nicht auf Effekte eingehen, da die von uns implementierten Benchmarks kaum davon Gebrauch machen.
 
@@ -108,6 +139,7 @@ Die Aussagekraft der Microbenchmarks steht in einem deutlich besseren Kosten-Nut
 
 \subsubsection{Microbenchmarks}
 Microbenchmarks sind deutlich kleiner als Macrobenchmarks, in der Implementation im Durchschnitt 120 Zeilen. %TODO verify claim
+%TODO add code examples to show idfference: macro implemtns a whole library, micro does not
 Microbenchmarks konzentrieren sich dabei immer auf ein einzelnes Problem und die Lösungen kommen meist komplett ohne externe Funktionalität aus. Wir können sie uns ähnlich einem Unit Test vorstellen.
 Folgende Microbenchmarks sind in AWFY implementiert, alle werden von uns in Effekt umgesetzt:
 \begin{itemize}
