@@ -1,5 +1,206 @@
 % IV. Implementierung 	"technical details"
 
+In diesem Kapitel beschreiben wir die Implementation von FastEffekt.
+Dazu unterteilen wir das Tool in zwei Kategorien:
+\begin{itemize}
+    \item der Javascript Wrapper, welcher die Benchmarks ausführt
+    \item die Effekt Benchmarks
+\end{itemize}     
+Wir betrachten jede Kategorie einzeln und beschreiben dabei Spezifikation von Input/Output, die technische Umsetzung und wie weit vom Original abgewichen wurde, sowie die ausführende Umgebung und Entwicklungsumgebungen.
+
+\subsection{Javascript Command Line Tool}
+Das User Interface von FastEffekt ist ein Javascript Command Line Tool.
+Wir können das Tool über die Kommandozeile aufrufen und dabei spezifizieren welches Effekt Backend verwendet werden soll und ob eine minimale Ausführung stattfinden soll oder eine komplette:
+\begin{lstlisting}[language=JavaScript]
+max-priv@NOAH367-L:~$ fasteffekt -h
+
+fasteffekt - by Maximilian Marschall
+benchmarking the current install of the effekt language.
+will execute benchmarks in effekt and JS.
+outputs results to console and JSON file
+execute all benchmarks: fasteffekt [--small] [backend]
+run with: 
+options:
+    --help, -h:      documentation
+    --small, -s:     run minimal benchmark to verify they all work
+    --version, -v:   show version of fasteffekt
+    --verbose        verbose logging
+    backend:         which effekt backend to use. defaults to JS. passed        directly to effekt.sh
+\end{lstlisting}
+
+Wenn wir das Tool aufrufen, werden nacheinander die Effekt Benchmarks kompiliert und dann ausgeführt, in jeweils einem neuen Subprocess in der Kommandozeile pro Benchmark. Dadurch sind die Benchmarks räumlich und zeitlich voneinander so isoliert wie möglich und können nicht gegenseitig ihre Performance beeinflussen.
+Dabei wird einmal die Effekt Version des Benchmarks ausgeführt und in einem weiteren Subprocess die JavaScript Version des Benchmarks. Beide laufen mehrfach hintereinander in ihrem jeweiligen Subprocess und geben die gemessene Zeit in Millisekunden zurück an das Kommandozeilen Werkzeug.
+
+Ein Aufruf des Tools dauert auf unserem Entwicklerlaptop etwa eine Minute:
+\begin{lstlisting}
+max-priv@NOAH367-L:~$ fasteffekt
+run for backend js
+running benchmark: permute
+running benchmark: nbody
+running benchmark: list
+running benchmark: mandelbrot
+running benchmark: bounce
+running benchmark: towers
+running benchmark: sieve
+running benchmark: storage
+running benchmark: queens
+Mini analysis: [
+  { name: 'permute', effekt: 1300, js: 6, ratio: 216.66666666666666 },
+  { name: 'nbody', effekt: 27793, js: 251, ratio: 110.72908366533865 },
+  { name: 'list', effekt: 208, js: 3, ratio: 69.33333333333333 },
+  {
+    name: 'mandelbrot',
+    effekt: 82317,
+    js: 1328,
+    ratio: 61.98569277108434
+  },
+  { name: 'bounce', effekt: 74, js: 3, ratio: 24.666666666666668 },
+  { name: 'towers', effekt: 5986, js: 70, ratio: 85.51428571428572 },
+  { name: 'sieve', effekt: 5169, js: 44, ratio: 117.47727272727273 },
+  { name: 'storage', effekt: 38, js: 7, ratio: 5.428571428571429 },
+  { name: 'queens', effekt: 58, js: 5, ratio: 11.6 }
+]
+Verbose analysis saved to fasteffekt_results.json
+\end{lstlisting}
+
+Nachdem alle Benchmarks ausgeführt wurden, findet eine sehr rudimentäre erste Analyse der Laufzeiten statt, wie wir oben sehen können, die \textit{mini analysis}. Dabei wird der Durchschnitt der Laufzeiten eines Benchmarks berechnet für die Effekt Ausführung und für die JavaScript ausführung.
+Die \textit{ratio} beschreibt das Verhältnis von Effekt zu JavaScript Laufzeitdurchschnitt und dient einer ersten Einschätzung der Performanz von Effekt.
+Zusätzlich werden alle Datenpunkte abgespeichert in fasteffekt\_results.json.
+
+\begin{lstlisting}[language=javascript]
+max-priv@NOAH367-L:~$ cat fasteffekt_results.json 
+[
+    {
+        "name": "nbody",
+        "effekt": {
+            "sum": 27793,
+            "avg": 2779.3,
+            "durations": [2858,2534,2433,3167,2803,2776,2827,2841,2765,2789]
+        },
+        "js": {
+            "sum": 251,
+            "avg": 25.1,
+            "durations": [34,28,26,24,22,23,24,24,23,23]
+        },
+        "ratio": 110.72908366533865
+    },
+    {
+        "name": "mandelbrot",
+        "effekt": {
+            "sum": 82317,
+            "avg": 8231.7,
+            "durations": [8963,9084,8063,8034,8415,7636,8097,7976,8005,8044]
+        },
+        "js": {
+            "sum": 1328,
+            "avg": 132.8,
+            "durations": [119,350,99,97,96,97,112,118,115,125]
+        },
+        "ratio": 61.98569277108434
+    },
+    [...]
+]
+\end{lstlisting}
+Jeder Eintrag im \textit{durations} Array ist eine Iteration des jeweiligen Benchmarks. Die Iterationen finden dabei im selben Subprocess und Aufruf des Benchmarks statt.
+
+\subsubsection{Entwicklungsumgebung und Werkzeuge}
+Um das FastEffekt Tool zu entwickeln und zu debuggen, haben wir Intellij Ultimate 2023.3.5 verwendet. Ultimate kommt von Haus aus mit weitreichender Unterstützung für Javascript.
+Dazu zählen Syntax Highlighting, statische Analyse, Autoformatierung und ein Debugger/Stepper.
+
+Entwickelt wurde auf der Plattform Ubuntu 22.04, verwaltet wird FastEffekt mit git und auf Github https://github.com/IR0NSIGHT/fasteffekt
+
+Zur Verifikation während dem Entwicklungsprozess haben wir Github Actions verwendet, welche auf ubuntu-latest das Tool im verify-mode ausführt.
+
+\subsubsection{Ausführende Umgebung}
+Da FastEffekt ein NPM Projekt ist, braucht es eine NodeJS Umgebung.
+Dafür verwenden wir node v18.16.1 auf einer ubuntu 22.04 Plattform.
+Um das Tool systemweit zu installieren, wird NPM link verwendet, was einen Symlink auf das FastEffekt Repo im PATH hinterlegt.
+
+In der Github Actions Pipeline wird die selbe Node Version verwendet.
+Hier wollen wir anmerken, dass die Actions Pipeline nicht genutzt wird um Benchmark Zeitmessungen durchzuführen, da keine Garantien gegeben werden können welche (virtuelle) Maschine mit welcher Hardware die Benchmarks ausführt. Benchmark Laufzeiten wären nicht vergleichsfähig und dadurch nicht aussagekräftig.
+
+\subsubsection{Spezifikation Input}
+Wie wir oben bereits gesehen haben, hat FastEffekt einige Flags und Optionen:
+\begin{lstlisting}
+    options:
+    --help, -h:      documentation
+    --small, -s:     run minimal benchmark to verify they all work
+    --version, -v:   show version of fasteffekt
+    --verbose        verbose logging
+    --backend=js     which effekt backend to use. defaults to JS. passed        directly to effekt.sh
+\end{lstlisting}
+
+Der --small Modus für FastEffekt ist für uns als Endnutzer eine Möglichkeit, einen minimal kurzen Durchlauf auszuführen. Dieser gibt keinen Aufschluss über die Performanzänderung der Benchmarks, sondern verifiziert nur, dass die Benchmarks kompilieren und laufen können. Dieser \textit{verify-mode} nutzt minimale Problemgrößen in den Benchmarks, um die Laufzeiten zu minimieren und überprüft, ob die Ergebnisse der Benchmarkberechnung für diese Problemgröße korrekt ist. Das bedeutet aber auch, dass keine Garantie gemacht wird, ob die Ergebnisse für andere Problemgrößen ebenfalls korrekt sind.
+
+Die --verbose Flag existiert, damit wir als Endnutzer nachvollziehen können, wie FastEffekt die Benchmarks ausführt. Dabei logged das Tool in den Standard Output welche Kommandozeilenbefehle ausgeführt werden. So können wir schnell und einfach einzelne Schritte reproduzieren, falls ein Benchmark nicht kompiliert oder fehlschlägt:
+\begin{lstlisting}
+max-priv@NOAH367-L:~/Dokumente/repos/Fasteffekt-Thesis$ fasteffekt -s --verbose
+verify-mode: true
+verbose
+run for backend js
+run all benchmarks with backend=js, small=--verify
+running benchmark: permute
+cd /home/max-priv/Dokumente/repos/fasteffekt/src/javascript/compare && cd ../../.. && ./out/permute 10 --verify
+cd /home/max-priv/Dokumente/repos/fasteffekt/src/javascript/compare && cd ../../.. && node src/javascript/Permute.js 10 --verify
+[...]
+\end{lstlisting}
+
+Mit der --backend=JS option, können wir spezifizieren, welches Effekt Backend verwendet werden soll. Wie bereits angesprochen in %TODO reference
+Kapitel 2 Technologien, sind nicht alle Backends gleich weit fortgeschritten in der Entwicklung. Wir könnem als Endnutzer trotzdem alle existierenden Backends auswählen, das Tool wird uns informieren wenn Fehler bei Kompilierung oder Ausführung auftreten.
+
+\subsubsection{Fehler Handling}
+Sollten bei einem Benchmark Fehler auftreten bei der Kompilierung oder beim Ausführen, werden diese aufgesammelt und am Ende in eine Logdatei geschrieben.
+Der Benchmark wird nicht aufgeführt in der Ergebnisdatei.
+Alle anderen Benchmarks laufen anschließend ganz normal weiter.
+Dabei kann FastEffekt erkennen ob der Fehler bei der Kompilierung oder beim Ausführen des Benchmarks aufgetreten ist. Wir werden als Nutzer informiert über den Standardoutput und ein detaillierter Fehler kommt in die Fehlerlog Datei.
+
+%FIXME: this error log points to the wrong file? thats for execution, not for compilation.
+\begin{lstlisting}
+max-priv@NOAH367-L:~/Dokumente/repos/fasteffekt$ cat fasteffekt_error.txt 
+cd /home/max-priv/Dokumente/repos/fasteffekt/src/javascript/compare && cd ../../.. && ./out/nbody 10 --verify 
+error:
+compile error
+status:
+1
+output:
+
+[error] src/effekt/benchmark/nbody.effekt:192:9: Expected ;
+      } else if (problemSize == 1) {
+        ^
+\end{lstlisting}
+Hier finden wir dann welcher Befehl zu welchem Fehler mit welchen Details geführt hat.
+
+\subsubsection{Implementationsdetails}
+Wie bereits beschrieben ist FastEffekt ist ein NPM Projekt, maßgeblich damit wir mit möglichst wenig Aufwand das Tool systemweit zur Verfügung stellen können.
+Libraries werden keine verwendet, lediglich einige Node Funktionalitäten um Subprocesses zu spawnen und im Dateisystem zu lesen und zu schreiben.
+
+Der entrypoint ist src/javascript/Comparator.js. Dort lebt auch die gesamte Logik des JavaScript Wrappers, weitere Module existieren nicht.
+
+In der Originalimplementation von AWFY exisitert Comparator.js nicht. Stattdessen hat jede verwendete Sprache eine Harness Klasse, welche als zentraler entrypoint dient um einen Benchmark auszuführen.
+Unserer Einschätzung nach ist Effekt noch nicht weit genug entwickelt um damit ein Kommandozeilenwerkzeug zu entwickeln. Es fehlt mindestens Funktionalität für Dateioperationen und Prozessverwaltung, desweiteren besitzt Effekt keinen Debugger/Stepper, was die Entwicklung damit zusätzlich verlangsamt. Wir benötigen ohnehin ein Wrapperprogramm um die Effekt Benchmarks herum, da wir eine begrenzte automatische Analyse der gemessenen Laufzeiten implementieren wollen.
+Aus diesen Gründen haben wir uns dazu entschieden, die Funktionalität für kompilieren, ausführen und I/O zu extrahieren und nicht in Effekt, sondern in JavaScript zu implementieren.
+
+Dies stellt zwar eine Abweichung von AWFY dar und geht entgegen deren Spezifikation für die Implementation in neuen Sprachen. Allerdings ist dies nur eine technische Entscheidung, die die Performanz der Benchmarks nicht verändert und damit aus unserer Sicht keine relevante Abweichung darstellt.
+
+\subsection{Effekt Benchmarks}
+Überblick und beschreibung wie ein Benchmark funktioniert und ausgeführt wird
+
+\subsubsection{Entwicklungsumgebung und Werkzeuge}
+IDE, Linter, debugger
+CI/CD
+\subsubsection{Ausführende Umgebung}
+effekt mit Version
+Node Backend, chez backend versionen
+ubuntu 22.04 
+CI/CD 
+
+\subsubsection{Spezifikation Input/Output}
+
+\subsubsection{Implementationsdetails}
+liste aller benchmarks mit besonderheiten und abweichung vom original benchmark
+
+
+
 \subsection{Beschreibung der Implementierungsumgebung}
 
 \subsubsection{VSC mit effekt linter}
@@ -7,13 +208,8 @@
 Für die Implementation der Benchmarks in Effekt wird Visual Studio Code als IDE verwendet.
 Effekt stellt dafür eine VSC Erweiterung zur Verfügung (https://github.com/effekt-lang/effekt-vscode), welches als Linter und Typechecker fungiert. 
 
-\subsubsection{Intellij Ultimate für Javascript Debugging des runners}
-Um das fasteffekt Tool selbst zu entwickeln und zu debuggen, wurde Intellij Ultimate verwendet. Ultimate kommt von Haus aus mit Javascript Unterstützung.
+%add one subsection for each benchmark, discuss if they were changed from originial
 
-\subsubsection{github actions für CI/CD Pipeline}
-Zur Verifikation von Änderungen während des Entwicklungsprozesses, wird Github Actions genutzt um fasteffekt im verify modus auszuführen. //FIXME use aktiv
- Dadurch kann sichergestellt werden, dass Änderungen an den Benchmarks nicht zum Fehlschlagen der Benchmarks während der Ausführung führt. Die Actions Pipeline wird nicht genutzt um Benchmark Timing durchzuführen, da keine Garantien gegeben werden können welche Maschine mit welcher Hardware die Benchmarks ausführt. Benchmark Timings wären nicht vergleichsfähig und dadurch nicht aussagekräftig.
-    
 \subsection{ Umsetzung des Benchmarking Tools } 
 \subsubsection{ Microbenchmarks }
 Implementiert in Effekt sind alle 9 Microbenchmarks aus Are-we-fast-yet:
