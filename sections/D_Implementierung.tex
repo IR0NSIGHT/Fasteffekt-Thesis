@@ -209,14 +209,24 @@ https://github.com/effekt-lang/effekt-vscode
 Zu diesem Zeitpunkt existiert kein Debugger/Stepper für Effekt, Consolelogging ist hier die nächstbeste Möglichkeit.
 
 Wie in %TODO link
-Kapitel oben beschrieben, führen wir zur Verifikation von Änderungen FastEffekt in einer Github Action aus, alle 9 Benchmarks werden dabei im verify-mode ausgeführt.
+Kapitel oben beschrieben, führen wir zur Verifikation von Änderungen FastEffekt in einer Github Action aus, alle 9 Benchmarks werden dabei im verify-mode ausgeführt. 
 
 \subsubsection{Ausführende Umgebung}
-effekt mit Version
-Node Backend, chez backend versionen
-ubuntu 22.04 
-CI/CD 
+Zur Ausführung der Effekt Benchmarks brauchen wir eine Installation von Effekt selbst, die Version auf der wir FastEffekt entwickelt haben ist der Commit d8a1fba426511663c97386eedc00b244744fa6e4 im Effekt Repository.
+Da Effekt nur selten neue Versionen released haben wir uns arbiträt für diese, damals relativ neue Version entschieden, welche einige von uns gewünschte Änderungen und Fixes besitzt, die der latest-release Version vom September 2023 fehlen.
 
+Effekt ist wie beschrieben noch in der Entwicklungsphase und breaking changes sind eine Regelmäßigkeit auf dem Master Branch. Deshalb ist davon auszugehen dass FastEffekt ausschließlich auf dem genannten Commit funkioniert, es besteht definitiv keine Rückwärtskompatibliltät zu älteren Versionen.
+
+Effekt benötigt für die Kompilierung und das Ausführen desweiteren Installationen der jeweiligen Backends, für uns relevant sind davon JavaScript, Chez-lift, Chez-callcc und Chez-Monadic.
+
+Für JavaScript nutzen wir weiterhin node v18.16.1, für die Chez-Backends, welche Scheme nutzen, haben wir Chez Scheme Version 9.9.9-pre-release.23.
+
+Der Vollständigkeit halber wollen wir hier erwähnen, dass MLton 20201002 genutzt wurde, auch wenn die Benchmarks nie lauffähig waren in diesem Backend.
+Das selbe gilt für LLV %TODO which llvm version did i use?
+
+In der Github Action nutzen wir ausschließlich das JavaScript Backend.
+
+Die Plattform ist auch hier Ubuntu 22.04.
 \subsubsection{Spezifikation Input/Output}
 
 \subsubsection{Implementationsdetails}
