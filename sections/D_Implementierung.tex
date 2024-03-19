@@ -6,7 +6,7 @@ Dazu unterteilen wir das Tool in zwei Kategorien:
     \item der Javascript Wrapper, welcher die Benchmarks ausführt
     \item die Effekt Benchmarks
 \end{itemize}     
-Wir betrachten jede Kategorie einzeln und beschreiben dabei Spezifikation von Input/Output, die technische Umsetzung und wie weit vom Original abgewichen wurde, sowie die ausführende Umgebung und Entwicklungsumgebungen.
+Wir betrachten jede Kategorie einzeln und beschreiben dabei Spezifikation von Input/Output, die technische Umsetzung, sowie die ausführende Umgebung und Entwicklungsumgebungen. Unterschiede zur Originalimplementation werden teilweise angesprochen, sind aber vertieft in 3. Ergebnisse diskutiert. %TODO link
 
 \subsection{Javascript Command Line Tool}
 Das User Interface von FastEffekt ist ein Javascript Command Line Tool.
@@ -178,8 +178,8 @@ output:
 Hier finden wir dann welcher Befehl zu welchem Fehler mit welchen Details geführt hat.
 
 \subsubsection{Implementationsdetails}
-Wie bereits beschrieben ist FastEffekt ist ein NPM Projekt, maßgeblich damit wir mit möglichst wenig Aufwand das Tool systemweit zur Verfügung stellen können.
-Libraries werden keine verwendet, lediglich einige Node Funktionalitäten um Subprocesses zu spawnen und im Dateisystem zu lesen und zu schreiben.
+Wie bereits beschrieben ist FastEffekt ein NPM Projekt, maßgeblich damit wir mit möglichst wenig Aufwand das Tool systemweit zur Verfügung stellen können.
+Libraries werden keine verwendet, lediglich einige Node Funktionalitäten um Subprocesses zu spawnen sowie im Dateisystem zu lesen und zu schreiben.
 
 Der entrypoint ist src/javascript/index.js. Hier befindet sich die Logik für Kommandozeilenoperationen: Parsen von vom Nutzer definierten Parametern und das anschließende Aufrufen des Werkzeugs.
 Die Logik für das Werkzeug befindet sich separat in einem eigenen Modul in src/javascript/compare/Comparator.js, hier werden wie oben beschrieben die Effekt Benchmarks in eigenen Subprocesses kompiliert, ausgeführt und die Daten analysiert und abgespeichert.
@@ -194,11 +194,13 @@ Dies stellt zwar eine Abweichung von AWFY dar und geht entgegen deren Spezifikat
 \subsection{Effekt Benchmarks}
 FastEffekt kompiliert Effekt Benchmarks und führt diese aus. Insgesamt existieren 9 Microbenchmarks in unserer Implementation, entwickelt aus der AWFY JavaScript Version der Benchmarks.
 Jeder Benchmark ist ein unabhängiges Programm und dient als sein eigener EntryPoint, wir können also direkt einzelne Benchmarks über die Kommandozeile aufrufen:
+
 \begin{lstlisting}[language=javascript]
 max-priv@NOAH367-L:~/Dokumente/repos/FastEffekt$ effekt.sh -b src/effekt/benchmark/list.effekt 
 max-priv@NOAH367-L:~/Dokumente/repos/FastEffekt$ ./out/list 10
 [11,13,13,12,13,11,13,13,17,34]
 \end{lstlisting}
+
 Im ersten Schritt kompilieren wir den Benchmark in eine ausführbare Datei indem wir für Effekt die -b \textit{build flag} nutzen, sodass der kompilierte Benchmark als executable Datei im Ordner \./out hinterlegt wird. Im zweiten Schritt rufen wir die Executable auf. Da jeder Benchmark auch ein kleines Kommandozeilenwerkzeug ist, müssen wir die Anzahl Iterationen oder die --verify Flag angeben. --verify ist hier die Flag um den %TODO reference kaptile 
 oben erwähnten verify-mode zu nutzen.
 Wie wir sehen können, gibt uns der Aufruf der Executable einen JSON Array von Zahlen zurück. Jede Zahl beschreibt die Dauer eines Durchlaufs des Benchmarks in Millisekunden, jeder Benchmark durchläuft mehrere Iterationen. Die Anzahl der Iterationen wird von uns als Nutzer festgelegt.
