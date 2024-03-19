@@ -34,10 +34,6 @@
 \pagestyle{headings}
 
 
-\begin{document}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Title page
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \usepackage{listings}
 \usepackage[dvipsnames]{xcolor}
@@ -48,7 +44,7 @@
 \lstdefinelanguage{JavaScript}{
   keywords={def, effect, interface, if, else, while, case, do, var, val, try, with, match, type, return, resume},
   keywordstyle=\color{OliveGreen}\bfseries,
-  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywords={class, export, boolean, throw, implements, import, this, module},
   ndkeywordstyle=\color{darkgray}\bfseries,
   identifierstyle=\color{black},
   sensitive=false,
@@ -78,6 +74,12 @@
    columns=flexible,
    lineskip=2pt
 }
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Title page
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{titlepage}
  \begin{center}
@@ -147,7 +149,7 @@ Write your acknowledgements here.
 \small\normalsize
 \addtocontents{toc}{\protect\setcounter{tocdepth}{0}} % Moronic hack to remove "contents" entry from TOC
 \tableofcontents
-\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{4}}
 
 
 % \renewcommand{\baselinestretch}{1}
