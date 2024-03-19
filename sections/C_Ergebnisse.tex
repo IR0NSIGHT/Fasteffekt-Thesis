@@ -28,16 +28,14 @@ Of course very important! You need to discuss the informatics as well as bio par
 
 \subsection{ Technische Einschränkungen durch Effekt }\label{sec:limitations_by_effekt}
 \subsubsection{ Import System }
-Wie in 4. Implementierung %TODO reference
- beschrieben, ist jeder Microbenchmark ein eigenständiges Kommandozeilenwerkzeug, die Logik für das Parsen der Parameter und Aufrufen der Benchmarks befindet sich in runFromCli, eine Funktion die jeder Benchmark importiert und nutzt.
+Wie in \ref{sec:Implementierung} beschrieben, ist jeder Microbenchmark ein eigenständiges Kommandozeilenwerkzeug, die Logik für das Parsen der Parameter und Aufrufen der Benchmarks befindet sich in runFromCli, eine Funktion die jeder Benchmark importiert und nutzt.
 runFromCli ist eine Abweichung gegenüber der AWFY Implementation, die stattdessen eine \textit{Harness} Klasse vorsieht:
 \begin{quote}
     Harness
 
     should be entry point for all executions
     dynamically selects benchmark to execute based on arguments
-
-    https://github.com/smarr/are-we-fast-yet/blob/master/docs/guidelines.md
+    \cite{awfyGithub}
 \end{quote}
 Effekt hat nur ein sehr rudimentäres Import System. Wir können Module einzeln importieren, aber es werden immer alle Funktionen aus dem Modul importiert und wir können die importierten Funktionen nicht umbenennen.
 Das bedeutet, dass es regelmäßig zu \textit{Nameclashes} kommt: Zwei Funktionen aus verschiedenen Modulen tragen den selben Namen und werden in die gleiche Datei importiert. Anschließend ist es für uns nicht mehr möglich beide zu verwenden, da immer nur eine Implementation mit diesem Namen im Namespace existieren kann.
