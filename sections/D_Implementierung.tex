@@ -32,7 +32,7 @@ Wenn wir das Tool aufrufen, werden nacheinander die Effekt Benchmarks kompiliert
 Dabei wird einmal die Effekt Version des Benchmarks ausgeführt und in einem weiteren Subprocess die JavaScript Version des Benchmarks. Beide laufen mehrfach hintereinander in ihrem jeweiligen Subprocess und geben die gemessene Zeit in Millisekunden zurück an das Kommandozeilen Werkzeug.
 
 Ein Aufruf des Tools dauert auf unserem Entwicklerlaptop etwa eine Minute:
-\begin{lstlisting}
+\begin{lstlisting}[language=JavaScript]
 max-priv@NOAH367-L:~$ FastEffekt
 run for backend js
 running benchmark: permute
@@ -241,11 +241,10 @@ Alle Microbenchmarks sind grundlegend gleich aufgebaut.
 Es gibt eine \textit{benchmark(): Int} Funktion, welche die Benchmark Logik ausführt und eine Integer zurückgibt. Die Bedeutung der Integer ist Benchmark abhängig, in allen Benchmarks wird das Ergebnis verifiziert. Die Verifikation passiert in \textit{verifyResult(Int)}, dort sind für bestimmte Problemgrößen jeweils die erwarteten Ergebniswerte hinterlegt.
 Die importierte Funktion \textit{innerBenchmarkLoop(n){ benchmark }{ verifyResult }} führt n Iterationen oft den Benchmark aus, verifiziert jedes Mal das Ergebnis und misst die Zeit für den Aufruf der Funktion.
 
-
 Die Funktionen \textit{miniBench()} und \textit{normalBench()} führend beide den Benchmark aus, mit unterschiedlichen Problemgrößen. miniBench dient der Verifikation, die Problemgröße ist minimal um die Laufzeit zu minimieren.
 normalBench ist für Performanzmessungen gedacht und nutzt normalerweise Problemgrößen > 1. In einigen Microbenchmarks ist die Problemgröße für beide Funktionen gleich, oder die Problemgröße synonym mit Anzahl innerer Iterationen.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=JavaScript]
 def Sieve() = {
     def sieve(flags: Array[Boolean], size: Int): Int = {
         var primeCount: Int = 0;
@@ -337,7 +336,7 @@ def main() {
 \end{lstlisting}
 
 Eine gängige Möglichkeit das Problem zu umgehen, ist in anderen Sprachen, hier am Beispiel von TypeScript, der gezielte Import von Teilen eines Moduls, beispielsweise nur einzelner Funktionen. Alternativ können ganze Module importiert werden, aber die Funktionen behalten ihren Namespace.
-Eine dritte Möglichkeit ist das Umgebenennen von imports.
+Eine dritte Möglichkeit ist das Umbenennen von imports.
 
 \begin{lstlisting}[language=javascript]
 import { calculate } from "./astropyhsics";
@@ -390,170 +389,31 @@ In der Originalimplementation von AWFY wird nicht unterschieden zwischen miniBen
 
 Interfaces existieren in Effekt, sind aber sehr restriktiv: Es dürfen nur exakt die Funktionen implementiert werden, welche das Interface definiert. Da aber die Benchmarks für die interne Logik unterschiedliche Funktionen nutzen, müsste man das Interface ausserhalb der Logik definieren. Ein Extraschritt, der aus unserer Sicht keinen Vorteil bringt, denn:
 
-Durch die invertierten Abhängigkeiten, stehen die Microbenchmarks als letztes Glied in der Kette der Abhängigkeiten. Es brächte als keinen Vorteil hier die Benchmarks von einem Interface erben zu lassen, selbst wenn sie alle ähnliche Funktionen teilen, denn kein anderes Modul importiert und nutzt die Benchmarks. 
+Durch die invertierten Abhängigkeiten, stehen die Microbenchmarks als letztes Glied in der Kette der Abhängigkeiten. Es brächte deshalb keinen Vorteil hier die Benchmarks von einem Interface erben zu lassen, selbst wenn sie alle ähnliche Funktionen teilen, denn kein anderes Modul importiert und nutzt die Benchmarks. 
 Aus diesen Gründen verzichten wir darauf, alle Microbenchmarks von einem gemeinsamen Interface erben zu lassen.
-
-
-\begin{lstlisting}[language=javascript]
-def Sieve() = {
-    def sieve(flags: Array[Boolean], size: Int): Int = {
-      var primeCount: Int = 0;
-      each(2, size){ i =>
-        if (flags.unsafeGet(i - 1)) {
-          primeCount = primeCount + 1;
-          var k = i + i;
-          while (k <= size) {
-            put(flags, (k - 1), false);
-            k = k + i;
-          }
-        }
-      }
-      return primeCount;
-    }
-  
-    def benchmark() = {
-      val flags: Array[Boolean] = fill[Boolean](5000, true);
-        return sieve(flags, 5000);
-      }
-  
-    def  verifyResult(result: Int) = {
-        return 669 == result;
-    }
-  
-    return innerBenchmarkLoop(1){benchmark}{verifyResult}
-}
+Weitere Abweichungen innerhalb der Benchmarks vom Original beschreiben wir individuell für jeden Benchmark.
 
 
 
-def miniRun() = {
-    Sieve()
-}
+%\subsection{Beschreibung der Implementierungsumgebung}
 
-def normalRun() = {
-    each(0,150){ i =>
-        Sieve()
-    }
-}
-
-def main() = {
-    println(runFromCli{ miniRun }{ normalRun })
-}
-\end{lstlisting}
-
-\subsubsubsection{}
-
-Ein entry point \textit{main\(\)} wird zur Verfügung gestellt, dort werden die 
-
-
+\subsubsection{ Technische Abweichungen der Microbenchmarks }
 liste aller benchmarks mit besonderheiten und abweichung vom original benchmark
 
-
-\subsection{Beschreibung der Implementierungsumgebung}
-
-\subsubsection{ Microbenchmarks }
 Implementiert in Effekt sind alle 9 Microbenchmarks aus Are-we-fast-yet:
+\begin{itemize}
+\item Bounce simulates a ball bouncing within a box.
+\item List recursively creates and traverses lists.
+\item Mandelbrot calculates the classic fractal. It is derived from the Computer Languages Benchmark Game.
+\item NBody simulates the movement of planets in the solar system. It is derived from the Computer Languages Benchmark Game.
+\item Permute generates permutations of an array.
+\item Queens solves the eight queens problem.
+\item Sieve finds prime numbers based on the sieve of Eratosthenes.
+\item Storage creates and verifies a tree of arrays to stress the garbage collector.
+\item Towers solves the Towers of Hanoi game.
+\end{itemize}
 
-Bounce simulates a ball bouncing within a box.
-
-List recursively creates and traverses lists.
-
-Mandelbrot calculates the classic fractal. It is derived from the Computer Languages Benchmark Game.
-
-NBody simulates the movement of planets in the solar system. It is derived from the Computer Languages Benchmark Game.
-
-Permute generates permutations of an array.
-
-Queens solves the eight queens problem.
-
-Sieve finds prime numbers based on the sieve of Eratosthenes.
-
-Storage creates and verifies a tree of arrays to stress the garbage collector.
-
-Towers solves the Towers of Hanoi game.
-
-Die Implementation richtet sich dabei nach der Javascript Implementation aus Are-We-Fast-Yet.
-Es gibt kleinere Abweichungen von der AWFY Implementation, hauptsächlich wie der Benchmark aufgerufen und ausgeführt wird. 
-Jeder Benchmark ist eine eigenständige, ausführbare Effekt Datei. Er importiert CLIRunner und führt entweder den normal-mode oder mini-mode des Benchmarks aus. Minimode wird für Verifikation genutzt, Normal zur Zeitmessung.
-Dies stellt eine Abweichung zur AWFY Implementation dar und ist durch das unfertige Import System von Effekt bedingt.
-Durch diese etwas ungewöhnliche Inversion of Imports können ungewollte Nameclashes von Verschiedenen Benchmarks im CLI Runner verhindert werden, jeder Benchmark hat keine Imports nach aussen ausser den CLI Runner und manchmal SOM.effekt.
-Der Benchmark misst die Zeit die jeder Durchlauf benötigt und gibt das Ergebnis als JSON-Array<Int> formatiert zurück in die Standardausgabe. Jede Zahl stellt dabei die Millisekunden dar, die ein Durchlauf dieses Benchmarks gebraucht hat.
-Standardmäßig führt jeder Run den selben Benchmark mehrfach aus.
-Gemessen wird dabei nur die Zeit die der Durchlauf zur Ausführung benötigt. Eventuelle Startupzeiten oder Laden von Abhängigkeiten werden nicht berücksichtigt.
-Ausgeführt werden kann jeder Benchmark durch zwei Schritte: Executable compilen, Executable aufrufen mit Parametern.
-Der Effekt Compiler kann zwar in einem Schritt direkt eine Datei compilen und ausführen, aber es ist dabei nicht möglich Kommandozeilen Argumente zu übergeben.
-Stattdessen muss die build Flag genutzt werden:
-effekt.sh -b meinBenchmark.effekt && ./out/meinBenchmark --verify 1
-
-Hier sei am Rande erwähnt dass zwar die meisten aber nicht alle Backends so funktionieren. Für die Chez-Derivate Backends ist die Übergabe von Kommandozeilen argumenten durch einen Bug noch nicht möglich.
-
-\subsubsection{ Runner }
-\subsubsection{ CLI Tool }
-  
-Um bequem alle Benchmarks hintereinander auszuführen und die Ergebnisse zu loggen existiert das FastEffekt CLI Tool.
-Es ist in Javascript geschrieben und ein NPM Projekt. Dadurch kann der Nutzer das Tool einfach herunterladen und in seinen PATH einbinden.
-Ruft der Nutzer das Tool auf, lässt Comparator.js alle in der Konfiguration hinterlegten Benchmarks synchron kompilieren und dann ausführen, in jeweils eigenen Shell Threads. Compile und Runtime Fehler werden aufgefangen und in eine Fehler-logdatei geschrieben. Die Ergebnisse eines jeden Benchmarks aus dem standard output werden aufgefangen und zwischengespeichert.
-Zusätzlich zu jedem Ausführen eines Benchmarks in Effekt, wird die Javascript Version des Benchmarks aus AWFY ausgeführt, gemessen und geloggt, analog zur Effekt Variante.
-Alle Durchlauf Zeiten werden nach Benchmark name gelogged in eine Datei, formatiert als JSON.
-Benchmarks, die fehlgeschlagen sind während compile oder runtime, tauchen nicht auf in der Output Datei.
-
-Zur Übersichtlichkeit für den Nutzer werden nach Abschluss des Benchmarks die Durchschnittlichen Zeiten jedes Benchmarks in Effekt und Javascript angezeigt, sowie ein Vergleich Effekt/Javascript:
-
-Mini analysis: [
-{ name: 'permute', effekt: 1024, js: 5, ratio: 204.8 },
-{ name: 'nbody', effekt: 24441, js: 217, ratio: 112.63133640552995 },
-{ name: 'list', effekt: 103, js: 1, ratio: 103 },
-{
-name: 'mandelbrot',
-effekt: 71809,
-js: 905,
-ratio: 79.34696132596684
-},
-{ name: 'bounce', effekt: 82, js: 4, ratio: 20.5 },
-{ name: 'towers', effekt: 5117, js: 67, ratio: 76.3731343283582 },
-{ name: 'sieve', effekt: 4699, js: 37, ratio: 127 },
-{ name: 'storage', effekt: 25, js: 4, ratio: 6.25 },
-{ name: 'queens', effekt: 38, js: 3, ratio: 12.666666666666666 }
-] 
-
-
-\subsubsection{ CI/CD Pipeline }
-
-Zur Verifikation während des Entwicklungsprozesses wird Github Actions genutzt. In der Pipeline wird auf einer Ubuntu VM 
-NPM und NodeJS installiert, sowie eine spezifische Version von Effekt. Dann wird FastEffekt im verify Modus ausgeführt. 
-Damit werden alle Benchmarks mit Javascript als Backend ausgeführt mit einer minimalen Problemgröße, um zu verifizieren, dass die Implementationen noch lauffähig sind.
-Die Pipeline schlägt fehl, wenn FastEffekt einen Errorcode zurück gibt.
-
-\subsubsection{ Vergleich der Performance von verschiedenen Effekt Versionen }
- 
-
-\subsection{ Herausforderungen und Lösungsansätze während der Implementierung }
-
-\subsubsection{ Import clashes }
-Relativ früh im Entwicklungsprozess trat das Problem der Import Clashes auf. Wenn zwei Module in Effekt importiert werden,
-die beide eine Funktion enthalten, welche den selben Namen hat, kommt es zum Clash. Es gibt für den Nutzer keine Möglichkeit 
-auszuwählen, welche der beiden Funktionen benutzt wird. Es gibt auch keine Möglichkeit, nur einen Teil der Module zu importieren.
-Importiert man ein Modul, wird immer alles importiert, analog zum sogenannten "Wildcard Import", einem aus Java bekannten Code Smell.
-
-Da nicht auswählbar ist, welche der beiden Funktionen verwendet wird, schränkt es die Nutzung von imports massiv ein. Ein workaround ist, in einer
-separaten Datei oder Modul einen der beiden Imports zu machen, dort alle Funktionen mit Wrappern neu zu definieren, und dann dieses neue Modul zu importieren.
-Effektiv werden dabei alle genutzten Funktionalitäten mit Wrappern versehen um sie umzubennenen. Der Kosten Nutzen Aufwand ist dabei so hoch, dass es in FastEffekt nicht genutzt wird.
-
-Als Alternative wird hier eine Inversion of Dependencies erzeugt: Es gibt nicht eine zentrale Klasse zu haben, welche alle Benchmarks importiert und ausführen kann.
-Stattdessen ist jeder Benchmark selbst ein ausführbares Modul mit eigenem Entry Point. Die nötige Funktionalität um Kommandozeilen Argumente zu parsen und Zeit zu messen wird vom
-CLI Runner Modul zur Verfügung gestellt, so hat jeder Benchmark nur die Abhängigkeit zum CLI Runner, statt der CLI Runner eine Abhängigkeit zu allen Benchmarks.
-
-Der offensichtliche Vorteil ist, dass die Anzahl von gesamten Imports in ein Modul hinein minimal wird. Zusätzlich kann garantiert werden, dass ein Benchmark nicht von einem anderen Benchmarkmodul beeinflusst wird, 
-wie beispielsweise durch erhöhte Ladezeiten oder RAM Bedarf. 
-Allerdings entsteht daraus der Nachteil, dass das Programm keinen zentralen Entry Point mehr hat, und auf neun verschiedene Datein verteilt ist. Dementsprechend wird ein 
-Wrapper Programm benötigt, sodass der Nutzer nur FastEffekt aufruft, und intern die einzelnen relevanten Benchmarks ausgeführt werden.
-
-Aufgrund des experimentellen und oft ändernden Zustands, sowie teils fehlende Funktionalität von Effekt ist das Wrapper Programm nicht in Effekt implementiert, sondern in Javascript.
-
-\subsubsection{unfertige backends}
-
-\subsubsection{buggy backends}
-
-
+%RANDOM RANT BELOW
 
 \subsubsection{ Quality of Life }
 Effekt ist eine funktionale Sprache. Are We Fast Yet wurde ursprünglich in Java implementiert, die als Vorlage ausgewählten Javascript Benchmarks nutzen auch stark objektorienterte Methoden.
@@ -568,9 +428,6 @@ In Java und Javascript gibt es nur die Vorgabe, dass es mindestens die Member se
 
 Auch Funktionsobjekte, welche in der allgemeinen Javascript Entwicklung viel genutzt werden, sind nicht möglich: Funktionen können nicht in Variablen "gespeichert" werden, können auch nicht von Funktionen returned werden.
 Der einzige erlaubte Weg eine Funktion weiter zu geben, ist als Parameter einer Higher Order Funktion, tiefer in den Call Stack hinein.
-
-
-
 
 \subsubsection{ Overload des Aktionspunktes }
 Zwar sind aufrufe wie "meinInterface.machEtwas()" möglich, allerdings ist dies keine echtes Objekt Orientiertes paradigma, sondern nur Syntaktik Sugar.
@@ -595,25 +452,3 @@ Das hat den Vorteil dass die Javascript Laufzeit aussagekräftiger wird, aber di
 
 Die dritte Lösung ist das Erhöhen von Problemgröße und inneren Iterationen in Effekt und Javascript, so bleibt Aussagekraft und Vergleichbarkeit erhalten.
 Damit wird das FastEffekt Tool schmerzhaft langsam für den Endnutzer, wenn Laufzeiten von einer Minute und mehr erreicht werden, und verletzt damit das Kernrequirement eine schnelle Möglichkeit von Performance Messung zu bieten.
-
-\subsubsection{ import clashes }
-import clashes erzwingen inversion-of-imports (use cli-runner, single executables)
-
-\subsection{Architektur des Programms}
-\subsubsection{ CLI Tool mit NPM, JS }
-\subsubsection{ Are We Fast Yet javascript und java }
-\subsubsection{ ein runner lässt einen benchmark laufen und misst die zeit }
-\subsubsection{ compile und init overhead reduzieren soweit möglich }
-  
-\subsection{ Performanz- und Funktionalitätstests }
-\subsubsection{ baseline vergleich (vllt zu Future Work?) }
-\subsubsection{ x iterationen eines benchmarks -> x laufzeiten  }
-\subsubsection{ analysiere liste der laufzeiten jedes benchmarks }
-    
-\subsection{ Designentscheidungen für die Umsetzung in der neuen Programmiersprache }
-\subsubsection{ ursprünglich: analog zu JS Benchmarks aus AWFY }
-\subsubsection{ Designphilosophie ändert sich im Verlauf der Implementierung  }
-\subsubsection{ Laufzeitumgebung/Referenz ist immer die eigene Maschine }
-\subsubsection{CI/CD dient zur Verifikation, nicht zum Benchmarken  }
-    {\rightarrow} keine Garantie über Einfluss der Maschine in der Pipeline auf Performance 
-    
